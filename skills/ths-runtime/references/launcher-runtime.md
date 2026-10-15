@@ -11,6 +11,15 @@
 
 Resolve the actual checked-out symbols before editing; this map is navigation, not a substitute for reading the full function and its callers. A CLI request may cross into `ths-server` over HTTP, so inspect both ends of a changed command.
 
+## Command surface
+
+Names only; the README command table and `book/cli.md` are canonical for flags and semantics — verify before asserting behavior.
+
+- Bare `ths` starts the default environment and opens the dashboard. Lifecycle: `start` (`--no-open`, `--port-offset`), `wait`, `status`, `endpoints`, `open`, `list`, `stop`, `reset --force`, `run -- <cmd>`.
+- Wallet: `wallet balances`, `wallet faucet`, `wallet send`, `wallet activity`, `wallet shield`, `wallet unshield`; `faucet <ADDRESS>` funds an external address. `wallet send`/`wallet faucet`/`faucet` persist an idempotency key — repeating the command checks the pending payment instead of duplicating it.
+- Operations: `mine <N>`, `logs {app,zakura,lightwalletd}` (`-f`, `--tail`, `--head`), `pull`, `doctor`, `update`, `uninstall`.
+- Globals: `--name <instance>` for isolated environments, `--json` where supported. `cargo run -p thus-spoke-zakura -- <args>` invokes the source build.
+
 ## Instance lifecycle
 
 `Runtime::start_with` deletes stale resources for the selected name, allocates the stack, waits for readiness, runs until shutdown, and deletes the selected instance. `CleanupOnDrop` covers early exits. For any change in this path, walk normal shutdown, Ctrl+C, failure before the first resource, failure after each resource, readiness failure, and browser-open failure.
