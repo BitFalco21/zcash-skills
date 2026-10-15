@@ -51,6 +51,19 @@ The root `SKILL.md` is the entry point for agents that read a URL: point them
 at `https://zcashlabs.github.io/zcash-skills/SKILL.md` (or the file itself).
 It is not a discoverable skill on its own — each `skills/<name>/SKILL.md` is.
 
+## Evaluations
+
+[Agent evaluations](evals/README.md) compare three realistic THS investigation
+tasks with and without the candidate skills and test catalog selection on positive
+and near-miss prompts. These are separate from the deterministic fact-checker
+tests. Model runs are opt-in; results include their provenance and limitations.
+
+Run `python3 docs/check-facts.py` for local consistency and add `--upstream` to
+compare registered version, behavior, CI-selection, and source-owner oracles.
+Exit `1` reports contradictions or invalid definitions; exit `2` reports
+incomplete upstream verification. The nightly drift workflow fails for either
+status. A successful offline run does not establish upstream agreement.
+
 ## Sources and provenance
 
 The `zcash-*` and `ths-*` skills were seeded from

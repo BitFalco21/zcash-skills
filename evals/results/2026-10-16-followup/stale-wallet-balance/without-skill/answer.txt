@@ -1,0 +1,45 @@
+Health 200 does **not** establish that balances are current. Check the running artifact first, then the server snapshot, then browser invalidation. The checkout does not establish which boundary failed on the reported instance.
+
+**Source observations**
+
+- **Artifact:** [`Dockerfile`](/private/tmp/zcash-skills-eval-followup-20261016/stale-wallet-balance/without-skill/Dockerfile:22) copies the compiled server and built dashboard into the image. `crates/ths-cli/src/runtime/images.rs::app_image` selects a package-version tag; `runtime/resources.rs::ensure_app` mounts wallet data at `/data`, without mounting source. Editing server source immediately before launch does not establish that the container contains that edit.
+- **Health versus freshness:** `crates/ths-server/src/api/status.rs::health` requires startup completion, a responding node, and **some prior** `last_success_at`. It does not require `wallet_sync.state == "ready"` or current-tip alignment. `settlement_status` performs those stronger checks for `/api/v1/status`.
+- **Balance authority:** `state.rs::WalletSnapshot` owns the published accounts. `api/status.rs::accounts` returns that snapshot; `wallet.rs::RealWallet::apply_balances` obtains balances from the wallet SDK. `sync.rs` preserves the previous accounts and success timestamp on synchronization failure.
+- **Expected mining effect:** `bootstrap.rs::init` configures mining to `db.rs::TREASURY_ACCOUNT_ID`, Account 6. Accounts 1–5 are user-facing. Mining alone need not increase their displayed balances.
+
+**Diagnostic procedure — proposed observations, not executed**
+
+1. **Establish instance and artifact identity.** Use the same instance name for the documented `ths --name <name> endpoints --json`, status, and logs observations. Match its dashboard URL to the browser origin and API `instance` field. Obtain the running container’s immutable image ID and match it to build provenance containing the edit; a version tag or launch time is insufficient. If the image predates the edit, rebuild the app image and launch that artifact in a later authorized validation session. Refreshing the browser cannot update the server executable.
+
+2. **Capture server evidence together.** Record `/api/v1/health`, `/api/v1/status`, `/api/v1/accounts`, and `/api/v1/mining/jobs`, with timestamps; repeat status/accounts to distinguish progress from a persistent failure.
+
+   - Compare `node.blocks` and `node.bestblockhash` with `wallet_sync.observed_*` and `fully_scanned_*`; inspect `state`, `error`, `last_success_at`, `settled`, and `settlement_blocker`.
+   - Height equality alone is insufficient: same-height hash changes require reconciliation. `status.rs::settlement_status` also compares lightwalletd’s checkpoint with the node.
+   - A job with its full `completed_blocks` count can still be `failed` because synchronization failed. `mining.rs::MiningCoordinator::run` marks completion only after synchronization.
+   - Correlate app/lightwalletd logs with indexing timeouts, reconciliation errors, and checkpoint changes. Owners: `sync.rs::synchronize_wallet_until`, `refresh_wallet_snapshot_until`, the two-second `wallet_sync_loop`, and `reconcile.rs::sync_wallet`/`find_rewind`.
+   - If uncached `/accounts` responses themselves remain stale, investigate this server boundary before the browser. Confirm that a user-account balance change was actually expected.
+
+3. **Compare browser data with the server response.** Inspect the browser’s `/accounts` response, request origin, console/schema errors, and `/api/v1/events` stream. Compare exact account IDs and zatoshi amounts with the independent response.
+
+   - `web/src/hooks/queries.ts::useAccounts` supplies `WalletPage`; its total is derived from query data.
+   - `useServerEvents.ts` maps `wallet` to accounts invalidation, `chain` to status/explorer invalidation, and `sync` to status only. Successful snapshot publication emits `wallet` when accounts changed.
+   - Check for `event: update` / `data: wallet`, followed by an accounts refetch. A heartbeat alone establishes no invalidation.
+   - `app/providers.tsx` disables focus refetch and uses a five-second stale time; expiration does not itself poll accounts. Mining-job polling does not refresh balances.
+   - If reloading with browser HTTP cache disabled retrieves correct accounts and fixes the display, investigate missed events/query invalidation. The event source has no replay or reconnect invalidation handler; server `resync` handles broadcast lag, not guaranteed recovery of disconnected clients.
+
+Reject explorer-to-React balance reconstruction: it bypasses the authoritative wallet snapshot and cannot recover shielded ownership from public transactions. Reset is also inappropriate for diagnosis: [`book/troubleshooting.md`](/private/tmp/zcash-skills-eval-followup-20261016/stale-wallet-balance/without-skill/book/troubleshooting.md) documents deletion of the instance’s chain, wallet, seed, keys, and funds.
+
+**Proposed validation — all unexecuted**
+
+Use these existing regression owners:
+
+- `crates/ths-server/tests/unit/state/tests.rs::account_reads_return_the_snapshot_without_contacting_lightwalletd`
+- `tests/unit/sync/tests.rs::{synchronization_failure_preserves_the_last_good_snapshot, publication_keeps_the_last_snapshot_unless_the_scan_reached_its_target}`
+- `tests/unit/api/status/tests.rs::settlement_requires_all_three_components_at_the_same_tip`
+- `tests/unit/reconcile/tests.rs::same_height_and_lower_tip_reorgs_find_the_last_common_block`
+- `tests/unit/mining/tests.rs::synchronization_failure_has_full_known_count`
+- `web/src/hooks/useServerEvents.test.tsx`, `hooks/mining.test.tsx`, and `features/wallet/WalletPage.test.tsx`
+
+Add targeted regressions for health remaining 200 after a later sync failure, a mounted wallet refreshing after a `wallet` event, and disconnect/reconnect after a missed balance update. Separately validate artifact provenance and unchanged user balances after treasury-only mining.
+
+Only local source inspection was performed; no files were changed, services contacted, builds run, or tests executed.

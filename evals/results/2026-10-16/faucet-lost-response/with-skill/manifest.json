@@ -1,0 +1,8 @@
+{
+  "case": "faucet-lost-response",
+  "arm": "with-skill",
+  "source_revision": "97ae98d5e62ef5044d73890868a90a230303461f",
+  "source_sha256": "90d29fe1720f2de3e8b8cda3b699789f1a81f2154c0d9cc8bc7f9eacda95878f",
+  "skills_sha256": "ce583b56634ce0b2b99adb85e1da01f1ec8e19bbba582797450ef4cdc76f9175",
+  "prompt_sha256": "c920123e3cecf73df8a3803444d1969181d93a091ec276e83181a5886849aa88"
+}

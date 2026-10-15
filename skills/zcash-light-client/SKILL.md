@@ -5,7 +5,9 @@ description: Use when building or debugging Zcash light-client scanning, compact
 
 # Zcash light client
 
-Read [scanning and integration](references/scanning-integration.md). Identify the actual node, lightwallet service, wallet database, and application path, with their exact versions. The serving layer has shifted over time — lightwalletd (Go) is the legacy service; [Zaino](https://github.com/zingolabs/zaino) is the Rust indexer succeeding it, and both appear in deployed stacks (Thus Spoke Zakura still ships lightwalletd). Distinguish node tip, server indexed range, wallet scanned checkpoint, and spendable state.
+Identify the actual node, lightwallet service, wallet database, and application path, with their exact versions. Distinguish node tip, server indexed range, wallet scanned checkpoint, and spendable state.
+
+For a service or state-ownership question, load [the layer map](references/scanning-integration.md#locate-the-state-owner). For scan scheduling, discovery, or persistence, load [the scan pass](references/scanning-integration.md#a-scan-pass-end-to-end). For timeouts or information leaks, load [failure/privacy boundaries](references/scanning-integration.md#privacy-and-failure-boundaries). For rollback or interrupted commits, load [the worked fork task](references/scanning-integration.md#worked-task-same-height-fork-and-interrupted-commit). Choose an oracle from [decisive tests](references/scanning-integration.md#decisive-tests).
 
 For a sync change, follow block continuity, birthday and tree initialization, note and transparent output discovery, nullifier tracking, cursor persistence, and rollback. Prove that interruption or reorg cannot publish a cursor ahead of the durable wallet state. Use the wallet's rewind and rescan APIs for recovery.
 

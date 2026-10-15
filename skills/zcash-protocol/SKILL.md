@@ -5,9 +5,11 @@ description: Use when changing or evaluating Zcash consensus rules, network-upgr
 
 # Zcash protocol
 
-Read [protocol and consensus](references/protocol-consensus.md). Resolve the target network, block height, activated upgrade, transaction version, and governing specification revision before editing or reviewing consensus-sensitive code.
+Resolve the target network, block height, activated upgrade, transaction version, and governing specification revision before editing or reviewing consensus-sensitive code.
 
-The current surface is NU6.3 (Ironwood: v6 transactions, the sealed Orchard pool) with NU7 ([ZIP 259](https://zips.z.cash/zip-0259)) on Testnet — 25-second blocks, per-pool shielded action limits, v4 transactions disallowed (Sprout unspendable while v4 is disallowed), 60% fee burn, NSM issuance. NU7 adds no new transaction format, but signatures commit to a consensus branch ID, so a transaction signed pre-activation is invalid post-activation. Expiry is still in blocks; ZIP 218 moves the default `txexpirydelta` to 120 to preserve ~50-minute wall-clock expiry at 25-second spacing. Keep consensus validity distinct from node mempool policy and wallet construction choices. Use the applicable protocol specification and ZIPs to define expected behavior; use the pinned implementation to locate the code path. Exercise exact boundary heights, malformed encodings, and published vectors where applicable. Investigate differences between implementations — e.g. [Zebra](https://github.com/ZcashFoundation/zebra) versus [Zakura](https://github.com/zakura-core/zakura) — before deciding which is correct.
+For a disputed rule or rejection, load [rule classification](references/protocol-consensus.md#choose-the-governing-rule). For NU6.3 pool or transaction behavior, load [Ironwood](references/protocol-consensus.md#nu63-and-the-ironwood-pool); for NU7 activation, branch IDs, or changed expiry defaults, load [NU7](references/protocol-consensus.md#nu7-zip-259). For a boundary test, load [implementation tracing](references/protocol-consensus.md#trace-the-implementation) and [the evidence matrix](references/protocol-consensus.md#evidence-matrix). For v5 transaction IDs and authorization, load [the worked transaction task](references/protocol-consensus.md#worked-task-v5-transaction-effects-and-authorization).
+
+Keep consensus validity distinct from node mempool policy and wallet construction choices. Use the applicable protocol specification and ZIPs to define expected behavior; use the pinned implementation to locate the code path. Exercise exact boundary heights, malformed encodings, and published vectors where applicable. Investigate differences between implementations before deciding which is correct.
 
 ## Core workflow
 

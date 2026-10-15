@@ -7,8 +7,8 @@
 | Artifact | Current owner or check |
 | --- | --- |
 | Cargo version and launcher binary | `[workspace.package].version`, `crates/ths-cli`, `release-distribution` feature |
-| App and lightwalletd images | `Dockerfile`, `docker/lightwalletd.Dockerfile`, `crates/ths-cli/src/runtime.rs` image selectors |
-| Pinned Zakura node image | `crates/ths-cli/src/runtime.rs` (`ZAKURA_IMAGE` constant) |
+| App and lightwalletd images | `Dockerfile`, `docker/lightwalletd.Dockerfile`, `crates/ths-cli/src/runtime/images.rs` image selectors |
+| Pinned Zakura node image | `crates/ths-cli/src/runtime/images.rs` (`ZAKURA_IMAGE` constant) |
 | Installer and updater | `install.sh`, `crates/ths-cli/src/updater.rs`, `tests/install.sh` |
 | Candidate and published workflows | `.github/workflows/release.yml`, `.github/workflows/publish.yml` |
 | Human release notes | `CHANGELOG.md`, `RELEASING.md` |
@@ -45,7 +45,7 @@ If a released launcher cannot pull, record its compiled Cargo version and the ex
 
 **Input:** The manually dispatched `Release candidate` workflow is green, but a versioned launcher reports a missing app or lightwalletd image. The candidate's image jobs use `push: false`; only a tag-triggered run publishes architecture digests and assembles the versioned manifests. Diagnose the tagged artifact path before changing Dockerfiles or installer logic.
 
-1. Read the launcher's compiled version (`ths --version`) and `runtime.rs`'s app/lightwalletd image selectors. The expected tags are the exact Cargo version, not `latest`.
+1. Read the launcher's compiled version (`ths --version`) and `crates/ths-cli/src/runtime/images.rs`'s app/lightwalletd image selectors. The expected tags are the exact Cargo version, not `latest`.
 2. Inspect the tag-triggered `release.yml` run, especially both native architecture image jobs and `image-manifests`. The versioned app and lightwalletd manifests must each list `linux/amd64` and `linux/arm64`; record their digest identities and GHCR visibility.
 3. Download the draft's `SHA256SUMS`, four `ths-<target>.tar.gz` archives, and `install.sh`. Verify hashes in one directory and inspect that each archive contains only `ths`. A candidate artifact is not interchangeable with the tagged draft.
 4. After publication, inspect `publish.yml`'s promotion and anonymous installer smoke. A published `latest` tag is a convenience alias; the launcher still selects the exact version.

@@ -1,0 +1,33 @@
+**Keep the original idempotency key and exact address/amount.** First read `GET /api/v1/faucet/address?idempotency_key=<URL-encoded-original-key>` on the same instance. Let background recovery continue; if resubmitting, use the original request unchanged. A fresh key creates a separate payment and can pay twice. A 404 or missing activity entry alone does not establish that nothing happened.
+
+**Observed in source**
+
+- **Production HTTP acceptance:** `api::router` routes POST to `faucet_address` and GET to `faucet_address_status`. `execute_address_faucet` and its runtime trait are `#[cfg(test)]`, so they are not the production workflow. `faucet_address` validates readiness, key, Regtest destination, amount and dust, then stores the claim. `payment_response` returns **202** for pending states and **200** for terminal states, with a keyed `Location`; acceptance does not prove broadcast or confirmation. See [api.rs:32](./crates/ths-server/src/api.rs#L32) and [payments.rs:336](./crates/ths-server/src/api/payments.rs#L336).
+
+- **Durable identity:** External faucets use `ths.db.address_faucets`, separately from account activity. `Store::claim_address_faucet` returns the existing operation for the same key/address/amount; changed intent or cross-store key reuse produces `IdempotencyConflict` (HTTP 409). A fresh key is allowed. `record_address_prepared` atomically saves the txid/status and signed bytes plus expiry in `prepared_payments`. See [db/address_faucet.rs:24](./crates/ths-server/src/db/address_faucet.rs#L24) and [schema.rs:18](./crates/ths-server/src/db/schema.rs#L18).
+
+- **Server-owned recovery:** `bootstrap::background_tasks` starts `payment_confirmation_loop`. Once startup completes, it repeatedly loads unresolved records, acquires payment serialization, rereads current state, and calls `progress_address_faucet` → `execute_address_payment`. Errors remain pending with `last_error`. GET status only reads storage and remains available during startup; another POST is unnecessary to resume an accepted payment. See [bootstrap.rs:55](./crates/ths-server/src/bootstrap.rs#L55) and [progression.rs:59](./crates/ths-server/src/payments/progression.rs#L59).
+
+- **Saved transaction recovery:** For `preparing`, `repair_address_journal` checks the wallet journal by operation ID before building anything. `RealWallet::prepare_in` commits transaction construction and `wallet.db.ext_tsz_prepared_payments` together. For `prepared`/`broadcast`, `submit_address_prepared` → `submit_saved_prepared` checks the original txid first. If missing, it uses saved bytes, or `RealWallet::recover_prepared(txid)` to recover and persist the original transaction. Missing recovery data is an error, not permission to build another payment. See [progression.rs:598](./crates/ths-server/src/payments/progression.rs#L598), [wallet/payments.rs:243](./crates/ths-server/src/wallet/payments.rs#L243), [wallet/journal.rs:72](./crates/ths-server/src/wallet/journal.rs#L72), and [submission.rs:327](./crates/ths-server/src/payments/submission.rs#L327).
+
+**Before preparing a replacement**
+
+Follow `original_presence` and `original_after_absence` in [submission.rs:238](./crates/ths-server/src/payments/submission.rs#L238):
+
+1. Reconcile the original txid. Mempool presence retains it; canonical inclusion confirms it. RPC failures, malformed responses, mismatched identities or orphaned inclusion remain errors.
+2. If absent, recover its bytes and expiry. For a **nonzero expiry**, read chain height and then check the original txid again. Replacement is allowed only if it is still absent and `tip >= expiry_height`. Zero expiry does not authorize replacement.
+3. Before expiry, rebroadcast the **same signed bytes**. A broadcast error is reconciled by checking whether the transaction became known; uncertainty preserves pending state.
+4. On proven expiry, `reset_address_for_retry` resets the **same operation**. Preparation receives the old txid as replacement authorization; the wallet worker checks it against its journal. Scanned expiry alone cannot replace journaled bytes.
+
+Confirmation uses `confirm_address_after_mining_with_attempt`: check inclusion, mine/sync one block if necessary, then check again. `original_presence_from_lookup` requires matching txid, positive confirmations, a nonempty block hash, and agreement with the canonical hash at that block’s height. Queue acceptance or `broadcast` status is insufficient. See [confirmation.rs:20](./crates/ths-server/src/payments/confirmation.rs#L20).
+
+**Existing tests inspected; proposed validation—not executed**
+
+- [db/address_faucet/tests.rs](./crates/ths-server/tests/unit/db/address_faucet/tests.rs): `address_faucet_replay_survives_restart_and_rejects_conflicting_intents` and `concurrent_address_faucet_claims_share_one_operation`.
+- [payments/submission/tests.rs](./crates/ths-server/tests/unit/payments/submission/tests.rs): `address_faucet_reconciles_the_original_txid_after_a_lost_broadcast_response`, `queued_external_faucet_retry_preserves_its_payment_and_bytes`, and `saved_original_inclusion_wins_over_expiry_only_on_the_selected_chain`.
+- [wallet/payments/tests.rs](./crates/ths-server/tests/unit/wallet/payments/tests.rs): `scanned_expiry_does_not_authorize_replacing_a_journal` and `replacement_authorization_rechecks_the_journal_inside_the_worker`.
+- The ignored live test `queued_external_faucet_retry_survives_lost_response_and_restart` exercises the relevant failure sequence through [queued_retry_survives_restart](./crates/ths-server/tests/scenarios/activity_recovery/recovery.rs#L96). It asserts identical retry bytes, preserved operation/journals/reserved inputs across restart, confirmation of the original txid, canonical inclusion, exactly one destination payout and one keyed row, plus no new broadcast or mining on terminal replay.
+
+I would run those regressions and explicitly cover expiry-boundary inclusion, lookup outage, missing saved bytes, and interruption between wallet journaling and server recording. The proof is **one durable intent and one payout despite repeated submissions**, with identical bytes whenever the original remains valid—not merely one HTTP success.
+
+Only local source inspection was performed; no files, builds, tests, Cargo, Docker or network services were used.

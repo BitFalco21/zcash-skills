@@ -4,7 +4,7 @@ name: fact-drift
 # that moved, a 404, or a value that no longer matches — files an issue
 # instead of going unnoticed. PR/push checks stay offline; this job is the
 # one place upstream is compared on a schedule. Hard contradictions mark the
-# run failed; fetch/extract problems still open an issue but leave it green.
+# run failed; fetch/extract problems also fail it as incomplete verification.
 
 on:
   schedule:
@@ -51,10 +51,18 @@ jobs:
             gh issue comment "$issue" -R "$GITHUB_REPOSITORY" -F "$RUNNER_TEMP/drift-issue.md" > /dev/null
           else
             gh issue create -R "$GITHUB_REPOSITORY" \
-              --title "fact-drift: oracles disagree with versioned-facts.md" \
+              --title "fix(fact-drift): upstream drift or incomplete verification" \
               -F "$RUNNER_TEMP/drift-issue.md" > /dev/null
           fi
 
-      - name: fail on contradictions
+      - name: fail on contradictions or incomplete verification
         if: steps.check.outputs.status != '0'
-        run: exit 1
+        env:
+          CHECK_STATUS: ${{ steps.check.outputs.status }}
+        run: |
+          if [ "$CHECK_STATUS" = '2' ]; then
+            echo '::error::Upstream verification is incomplete; inspect the failed fetch or extraction.'
+          else
+            echo '::error::Fact checking failed; inspect the drift report.'
+          fi
+          exit 1

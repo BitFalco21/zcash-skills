@@ -1,0 +1,128 @@
+{
+  "faucet-lost-response/without-skill": {
+    "answer_sha256": "a39fadcba2c17fa43c07e7ee63c76d5f654eb9b27ad72a7d47b650a22cb6bd7d",
+    "checks": {
+      "replay_identity": {
+        "pass": true,
+        "evidence": "The opening retains original key/exact address/amount and both databases. Durable identity describes external address_faucets, same-operation replay, changed-intent and cross-store conflicts, and absence from account activity; this matches claim_address_faucet and persistent key ownership."
+      },
+      "production_path": {
+        "pass": true,
+        "evidence": "Production entry and acceptance sections trace api::router -> faucet_address -> claim_address_faucet, background_tasks/payment_confirmation_loop -> progress_payment_intents_with_traversal -> progress_address_faucet/execute_address_payment, saved submission and confirmation. execute_address_faucet/AddressFaucetRuntime are correctly cfg(test)."
+      },
+      "original_transaction": {
+        "pass": true,
+        "evidence": "The replacement section reconciles original txid, server bytes/expiry and wallet operation journal, requires renewed absence after height lookup and nonzero reached expiry, and preserves uncertainty. It explains same-operation reset and old-txid authorization rather than a fresh key; this matches original_after_absence and wallet journal gates."
+      },
+      "recovery_oracle": {
+        "pass": true,
+        "evidence": "It distinguishes 202/200 acceptance from confirmed transaction identity, positive confirmations and canonical block hash; names admission/persistence/submission tests and the ignored queued external restart scenario. Proposed evidence includes unchanged operation/journals/bytes, original txid inclusion, one payout/key row and no terminal replay broadcast/mining. All validation is explicitly unexecuted."
+      }
+    }
+  },
+  "stale-wallet-balance/without-skill": {
+    "answer_sha256": "2edddfea0a6b23c64ff673fa35d34885fd0ca0ee492409d889ef7fa204480c8a",
+    "checks": {
+      "artifact": {
+        "pass": false,
+        "evidence": "It correctly identifies prebuilt version-tagged images, source not mounted, immutable image/source provenance and the need to rebuild the app image. But it omits the documented build --dev workflow and does not distinguish a Vite-only frontend from running edited server code. Refreshing a browser cannot update the executable is sound but does not cover that declared Vite development boundary."
+      },
+      "snapshot": {
+        "pass": true,
+        "evidence": "The procedure compares raw accounts/status with node and wallet scanned/observed heights AND hashes, errors/last_success/settlement, explicitly checking same-height hash changes. It traces sync.rs checkpoint/publication owners, last-good snapshot retention and health requiring only prior success, and preserves evidence before destructive reset; this matches sync.rs and api/status.rs."
+      },
+      "ui_boundary": {
+        "pass": true,
+        "evidence": "It traces queries.ts::useAccounts supplying WalletPage with derived query totals, compares browser accounts bytes/origin with independent server data, and checks wallet event -> accounts refetch versus chain/sync status/explorer roles. It rejects reconstructing public explorer balances into React state and keeps WalletSnapshot authoritative, matching the actual query/invalidation boundary even without spelling queryKeys.accounts literally."
+      },
+      "validation": {
+        "pass": true,
+        "evidence": "It names snapshot preservation/publication-target tests, same-height reorg/status/mining tests and browser regression owners. It proposes health-after-sync-failure, mounted wallet refresh after a wallet event, and missed-event reconnect checks, while separately proposing artifact provenance and treasury-only mining checks. All source observations, regression proposals and later live evidence are explicitly separated as unexecuted."
+      }
+    }
+  },
+  "foreign-resource/without-skill": {
+    "answer_sha256": "377aab1ac0761477c3159217bd05b28275fb4e756823d7889def62ec98b6aeda",
+    "checks": {
+      "ownership": {
+        "pass": true,
+        "evidence": "Observed source traces exact-name and com.zakura.ths.instance label validation in resources.rs, fixed-set nonpartial preflight in cleanup.rs, and recorded container/network IDs instead of adopting replacements. It accurately notes volumes have only name identity and cannot distinguish every same-label generation."
+      },
+      "startup": {
+        "pass": true,
+        "evidence": "It traces commands::run -> Runtime::start -> own_start -> start_owned, ownership before Docker preflight, and Inactive cleanup guard until verified initial cleanup. It explicitly covers both Err and unverified reports returning before allocation/Drop retry and Explicit preventing later second cleanup, consistent with startup.rs."
+      },
+      "failure_oracles": {
+        "pass": true,
+        "evidence": "The three regression items cite actual foreign-resource, initial-failure, partial-startup and same-name replacement tests. Proposed assertions cover missing/null labels, no new allocation/deletion/retry or metadata changes, retained foreign/replacement identities and dependencies, and partial allocation journal recovery. This establishes the requested refusal/preservation boundaries rather than only count-based success."
+      },
+      "evidence_limits": {
+        "pass": false,
+        "evidence": "It explicitly disclaims execution and proposes Docker-free regressions plus cargo test --lib, but never distinguishes RecordingHost/RecordingDocker simulation limits from a disposable real-Docker collision/data-survival check. Describing existing simulated ownership assertions does not satisfy the declared seam-versus-live evidence distinction."
+      }
+    }
+  },
+  "foreign-resource/with-skill": {
+    "answer_sha256": "e140f443e1fd98a18fb06d7e80879df07eac7fcd84e6fbc5b2f0137b487c7ebd",
+    "checks": {
+      "ownership": {
+        "pass": true,
+        "evidence": "It rejects prefix sweeps, cites resources.rs label/exact-name verification and cleanup.rs production fixed-set cleanup, and describes journaled container/network ID retention rather than replacement adoption. It correctly limits volume guarantees to name plus rechecked ownership label."
+      },
+      "startup": {
+        "pass": true,
+        "evidence": "Startup owner and initial-boundary sections trace commands::run -> Runtime::start -> own_start -> start_owned, with ownership before preflight. They explicitly state Inactive until verified report, no allocation/Drop retry for Err or unverified result, and Explicit before later partial cleanup, consistent with startup.rs."
+      },
+      "failure_oracles": {
+        "pass": true,
+        "evidence": "Regression items cover the initial collision/error/unverified-report boundaries, allocator checkpoint failures and same-name replacement tests. Assertions require no initial allocation/removal/retry, unchanged data/metadata, recorded identities and dependency retention, and foreign/other-instance preservation rather than just one delete call."
+      },
+      "evidence_limits": {
+        "pass": true,
+        "evidence": "It names injected RecordingHost errors and explains RecordingHost::allocate creates no resources. It separately proposes a disposable-daemon collision check with stable IDs/labels/data sentinels and says related ignored live tests do not prove this exact case. It explicitly claims source inspection only, satisfying seam-versus-live evidence limits."
+      }
+    }
+  },
+  "faucet-lost-response/with-skill": {
+    "answer_sha256": "28583ff38ea716a906d5dac11d45d8b9b8410c4629ccfd77780dc2397ad143bf",
+    "checks": {
+      "replay_identity": {
+        "pass": true,
+        "evidence": "The opening retains original key/address/exact zatoshi amount and retained instance. Durable identity explains same-row replay and changed-intent/cross-account-key conflicts; acceptance distinguishes external address_faucets from internal recognized-account activities and existing store identity, matching claim_address_faucet."
+      },
+      "production_path": {
+        "pass": true,
+        "evidence": "The ordered trace follows faucet_address acceptance and Store::claim_address_faucet to bootstrap/payment_confirmation_loop, progression traversal/progress_address_faucet/execute_address_payment, submit_address_prepared/submit_saved_prepared, and confirmation. execute_address_faucet and AddressFaucetRuntime are explicitly cfg(test) adapters."
+      },
+      "original_transaction": {
+        "pass": true,
+        "evidence": "It inspects keyed row, original txid/bytes/expiry, application and wallet journals, reservations and synchronization. It reconciles mempool/canonical historical inclusion, requires repeated absence after chain height plus nonzero reached expiry, and preserves uncertainty; preparation authorization must match journal txid. This matches submission.rs and wallet recovery gates."
+      },
+      "recovery_oracle": {
+        "pass": true,
+        "evidence": "It separates HTTP acceptance from canonical confirmed transaction evidence, names admission/persistence/submission/progression tests and the ignored production-HTTP queued restart scenario. It requires unchanged operation/journals/bytes/inputs across restart, original txid inclusion, one row/payout and no terminal replay broadcast/block. Validation is clearly unexecuted."
+      }
+    }
+  },
+  "stale-wallet-balance/with-skill": {
+    "answer_sha256": "6f9d4f990f788ca664a88447d338a945ceb5f223a323dff54d4767998f2b1973",
+    "checks": {
+      "artifact": {
+        "pass": true,
+        "evidence": "The procedure checks source revision/diff, named instance/endpoints, immutable image ID and build provenance; it gives build --dev followed by a new named instance and explains rebuild does not replace an existing container. It also identifies Vite THS_DEV_API as only proxying frontend requests to an existing server, covering the declared server-versus-frontend boundary."
+      },
+      "snapshot": {
+        "pass": true,
+        "evidence": "It compares raw status/accounts and mining evidence with node and wallet scanned/observed heights AND hashes, settlement/error/last_success, explicitly excluding equal-height freshness assumptions. It traces sync.rs checkpoint-gated snapshot replacement, preserved earlier balances after failure and health requiring only a prior success, while preserving evidence before reset."
+      },
+      "ui_boundary": {
+        "pass": true,
+        "evidence": "It keeps server snapshot authoritative and traces api.accounts/request/accountSchema -> useAccounts/queryKeys.accounts -> WalletPage, comparing response/query update time/render. The actual wallet-versus-chain/sync invalidation mapping and emitted wallet change, mining query scope, resync and replay limitations are grounded in source; it rejects explorer/activity ownership for balances."
+      },
+      "validation": {
+        "pass": true,
+        "evidence": "It names state/sync snapshot preservation and target/canonical publication tests, same-height reorg and health/settlement/mining tests. Browser additions mount WalletPage with real useAccounts, changed fixture, wallet event, refetch AND displayed total, with topic/error cases. These unexecuted checks are distinct from proposed preserved-evidence rebuild/new-instance live reproduction."
+      }
+    }
+  }
+}

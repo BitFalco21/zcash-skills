@@ -31,27 +31,30 @@ file whose match text differs from `value`.
 | Workspace version | `0.3.0` | 2026-10-08 | `Cargo.toml` |
 | Packages / binary | `ths-cli`, `ths-server`; package `thus-spoke-zakura`, binary `ths` | 2026-10-02 | `Cargo.toml` |
 | Rust toolchain | `1.98.0` (`rust-toolchain.toml`); Node `24` for `web/` | 2026-10-02 | `rust-toolchain.toml`, `ci.yml` |
-| Pinned node image | `zakuracore/zakura:1.6.0` (`ZAKURA_IMAGE` in `runtime.rs`) | 2026-10-02 | `crates/ths-cli/src/runtime.rs` |
+| Pinned node image | `zakuracore/zakura:1.6.0` (`ZAKURA_IMAGE` in `runtime/images.rs`) | 2026-10-16 | `crates/ths-cli/src/runtime/images.rs` |
 | zcashd-compat sidecar image | `zakuracore/zcashd` — current docs tag `v1.2.0` (zcashd-versioned, independent of Zakura tags) | 2026-10-08 | `zakura` repo `docs/zcashd-compat.md` |
-| App / lightwalletd images | `ghcr.io/zcashlabs/thus-spoke-zakura-app`, `-lightwalletd` | 2026-10-02 | `runtime.rs`, `release.yml` |
+| App / lightwalletd images | `ghcr.io/zcashlabs/thus-spoke-zakura-app`, `-lightwalletd` | 2026-10-16 | `crates/ths-cli/src/runtime/images.rs`, `release.yml` |
 | Wallet crate pins | `zakura-{keys,primitives,proofs,orchard,sapling-crypto,transparent,zip321} = 2.2.0`; `zakura-client-{backend,sqlite} = 0.1.0-rc7`; `zakura-pczt = 0.1.0-rc4`; imported under `zcash_*` aliases | 2026-10-08 | `crates/ths-server/Cargo.toml` |
 | Account layout | accounts `1..=5` user-facing; account `6` treasury/miner | 2026-10-02 | `db.rs` |
-| Default loopback ports | dashboard `32805`, RPC `18232`, lightwalletd `9067`, P2P `18233` (+offset stride 10) | 2026-10-02 | `runtime.rs` |
-| Shielded pool | Ironwood; `orchard` rejected as destination pool post-NU6.3 | 2026-10-02 | `api.rs`, `wallet.rs` |
-| Wallet DB schema names | `ext_tsz_*` — intentionally kept for migration stability despite the crate rename | 2026-10-02 | `wallet.rs` comment |
+| Default loopback ports | dashboard `32805`, RPC `18232`, lightwalletd `9067`, P2P `18233` (+offset stride 10) | 2026-10-16 | `crates/ths-cli/src/runtime/instance.rs` |
+| Shielded pool | Ironwood; `orchard` rejected as destination pool post-NU6.3 | 2026-10-02 | `crates/ths-server/src/api/payments.rs`, `wallet/payments.rs` |
+| Wallet DB schema names | `ext_tsz_*` — intentionally kept for migration stability despite the crate rename | 2026-10-16 | `crates/ths-server/src/wallet/journal.rs`, `wallet/recovery.rs` |
 | Dev API env var | `THS_DEV_API` (not `TSZ_DEV_API`) | 2026-10-02 | `AGENTS.md` |
-| Regtest NU activation | NU6–NU6.3 at height 1 in generated `zakurad.toml`; `regtest_network().nu7 = None` | 2026-10-06 | `main.rs`, `wallet.rs` |
-| Address-faucet idempotency | `faucet_address` requires a key; `claim_address_faucet` persists to `address_faucets`; replay resumes the operation; `activities`/`address_faucets` share one key space (`IdempotencyConflict`) | 2026-10-08 | `api.rs` `execute_address_faucet`, `db.rs` |
-| Address-faucet replay tests | `confirmed_address_faucet_replays_without_sending_a_second_payment`, `address_faucet_replay_survives_restart_and_rejects_conflicting_intents`, `address_faucet_reconciles_the_original_txid_after_a_lost_broadcast_response` | 2026-10-08 | `api.rs`, `db.rs` test modules |
-| CI live cases | `activity_recovery` runs `broadcast_recovers_after_auto_mine_failure` + `concurrent_identical_sends_have_one_chain_effect` + `address_faucet_retry_after_server_restart_pays_each_destination_once`; the 10k-block and other address-faucet cases are not in CI | 2026-10-08 | `ci.yml` |
+| Regtest NU activation | NU6–NU6.3 at height 1 in generated `zakurad.toml`; `regtest_network().nu7 = None` | 2026-10-06 | `crates/ths-server/src/bootstrap/config.rs`, `wallet.rs` |
+| Address-faucet idempotency | `faucet_address` requires a key; `claim_address_faucet` persists to `address_faucets`; replay resumes the operation; `activities`/`address_faucets` share one key space (`IdempotencyConflict`) | 2026-10-16 | `crates/ths-server/src/api/payments.rs`, `db/address_faucet.rs`, `db/activity.rs`, `payments/progression.rs` |
+| Address-faucet replay tests | `confirmed_address_faucet_replays_without_sending_a_second_payment`, `address_faucet_replay_survives_restart_and_rejects_conflicting_intents`, `address_faucet_reconciles_the_original_txid_after_a_lost_broadcast_response` | 2026-10-16 | `crates/ths-server/tests/unit/api/payments/tests.rs`, `tests/unit/db/address_faucet/tests.rs`, `tests/unit/payments/submission/tests.rs`; pair legacy adapter tests with production progression tests |
+| CI live cases | `activity_recovery` selects five: `broadcast_recovers_after_auto_mine_failure`, `concurrent_identical_sends_have_one_chain_effect`, `address_faucet_retry_after_server_restart_pays_each_destination_once`, `queued_send_retry_survives_lost_response_and_restart`, `queued_external_faucet_retry_survives_lost_response_and_restart`; the 10k-block workload is not selected | 2026-10-16 | `.github/workflows/ci.yml` |
+| Chain SSE invalidation | status, blocks, block, transaction, address; mempool is omitted | 2026-10-16 | `web/src/hooks/useServerEvents.ts` `TOPICS.chain` |
+| Runtime / payment orchestration owners | `runtime/startup.rs::start_owned`; `payments/progression.rs::payment_confirmation_loop` | 2026-10-16 | `crates/ths-cli/src/runtime/startup.rs`, `crates/ths-server/src/payments/progression.rs` |
 
 ## Machine-checkable facts
 
 Each block maps a `pattern` (regex appearing in repo docs) to the canonical
 `value`. A doc line is stale when the match does not contain the value after
 normalisation (backticks, commas, spaces and case ignored) — a pattern may match
-a span around the value, but a truncated value never passes. Anything without a
-pattern is date-only. Keep one `pattern` per fact; make it match the whole token
+a span around the value, but a truncated value never passes. Without a `pattern`,
+only the verification date and optional upstream oracle are checked. Keep one
+`pattern` per fact; make it match the whole token
 (e.g. `name:version`). A block may instead set `kind: forbid` (no `value`
 needed): every match of the pattern is then a stale-claim failure — use this
 for "X does not exist / X is not required" statements that upstream has since
@@ -66,13 +69,67 @@ exact normalised equality, and the PR fact check uses the same oracles for the
 lines a PR changes. Prefer an oracle whenever the value lives in a parseable
 upstream file — this works for `.rst` ZIP sources as well as `.md`.
 
+For unordered source lists, set `extract_all: true`: every first capture is
+collected into a comma-separated set and compared without regard to order. Use
+this for selected CI case names. A `coverage` regex scopes extraction to each
+selector line; every scope must yield exactly one capture or verification is
+incomplete, including partially changed selector syntax. Behavioral oracles may omit `pattern` and
+compare a source expression or owning symbol directly. Changed expressions or
+case sets are drift; moved files and unrecognized formats leave verification
+incomplete. A source-text oracle detects change for review; it does not prove
+runtime behavior.
+
+Exit statuses: `0` means the requested checks completed without contradictions,
+`1` means a contradiction or invalid definition, and `2` means upstream
+verification was incomplete. Without `--upstream`, `0` establishes local claim
+consistency only. The nightly workflow reports and fails incomplete verification;
+the PR claim report keeps its advisory policy and labels unverified rows.
+
+```facts
+id: ths-ci-live-cases
+value: address_faucet_retry_after_server_restart_pays_each_destination_once, broadcast_recovers_after_auto_mine_failure, concurrent_identical_sends_have_one_chain_effect, queued_external_faucet_retry_survives_lost_response_and_restart, queued_send_retry_survives_lost_response_and_restart
+verified: 2026-10-16
+source: .github/workflows/ci.yml — exact ignored live selections
+upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/.github/workflows/ci.yml
+extract: --exact\s+([A-Za-z_][A-Za-z0-9_]*)
+extract_all: true
+coverage: ^.*--ignored\b.*$
+```
+
+```facts
+id: ths-chain-invalidation
+value: [[...queryKeys.status], ['blocks'], ['block'], ['transaction'], ['address']]
+verified: 2026-10-16
+source: web/src/hooks/useServerEvents.ts — TOPICS.chain expression
+upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/web/src/hooks/useServerEvents.ts
+extract: ^  chain:\s*(\[[^\n]+\]),$
+```
+
+```facts
+id: ths-runtime-startup-owner
+value: start_owned
+verified: 2026-10-16
+source: crates/ths-cli/src/runtime/startup.rs — production startup entry
+upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/crates/ths-cli/src/runtime/startup.rs
+extract: ^\s*fn (start_owned)\(
+```
+
+```facts
+id: ths-payment-worker-owner
+value: payment_confirmation_loop
+verified: 2026-10-16
+source: crates/ths-server/src/payments/progression.rs — background payment progression
+upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/crates/ths-server/src/payments/progression.rs
+extract: ^pub\(crate\) async fn (payment_confirmation_loop)\(
+```
+
 ```facts
 id: zakura-image
 value: zakuracore/zakura:1.6.0
 pattern: zakuracore/zakura:[0-9a-zA-Z.\-]+
-verified: 2026-10-02
-source: crates/ths-cli/src/runtime.rs (ZAKURA_IMAGE)
-upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/crates/ths-cli/src/runtime.rs
+verified: 2026-10-16
+source: crates/ths-cli/src/runtime/images.rs (ZAKURA_IMAGE)
+upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/crates/ths-cli/src/runtime/images.rs
 extract: const ZAKURA_IMAGE: &str = "([^"]+)"
 ```
 
@@ -138,8 +195,8 @@ extract: ^\[workspace\.package\]\n(?:.*\n)*?version = "([^"]+)"
 id: address-faucet-idempotency
 kind: forbid
 pattern: faucet[^\n]{0,100}(?:no idempotency|(?:creates?|has|requires?|needs?|with) no activity row|does not (?:create|persist)[^\n]{0,30}(?:activity|row)|without (?:an? )?idempotency)|(?:no idempotency|no activity row)[^\n]{0,60}faucet
-verified: 2026-10-08
-source: crates/ths-server/src/api.rs — execute_address_faucet requires the key and persists via claim_address_faucet; claims of a keyless external faucet are stale
+verified: 2026-10-16
+source: crates/ths-server/src/api/payments.rs — production faucet_address requires the key and persists via db/address_faucet.rs::claim_address_faucet; payments/progression.rs resumes intent
 ```
 
 ```facts

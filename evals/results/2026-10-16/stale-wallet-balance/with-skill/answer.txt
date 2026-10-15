@@ -1,0 +1,33 @@
+Keep the server wallet snapshot authoritative. Reconstructing balances from explorer transactions would bypass wallet ownership and shielded scanning; resetting would destroy diagnostic evidence. The reported symptom does not establish a root cause.
+
+I read `AGENTS.md`, both candidate skills and their references, and local source. No files changed; no services, builds, Docker commands, or tests were run.
+
+Source observations:
+
+- **The running artifact may predate the edit.** `crates/ths-cli/src/runtime/images.rs::app_image` selects a version-tagged image. `runtime/resources.rs::ensure_app` mounts wallet data, without mounting source. `Dockerfile:22–25` installs the compiled server and built dashboard. Launching a container after editing source does not establish that it contains those edits.
+- **Health is weaker than wallet freshness.** `crates/ths-server/src/api/status.rs::health` requires startup completion, a responding node, and some `last_success_at`. It does not require the current sync state to be `ready`. `accounts` serves `state.rs::AppState::accounts`, which clones the published snapshot.
+- **Failed synchronization preserves earlier balances.** `sync.rs::synchronize_wallet_until` records an error on failure. `refresh_wallet_snapshot_until` publishes balances only after `scan_is_publishable` validates scan progress and chain identity.
+- **Mining need not increase the displayed balance.** `bootstrap.rs::init` selects `TREASURY_ACCOUNT_ID` as miner. Account 6 is hidden; `api/status.rs::accounts` exposes accounts 1–5. `web/src/features/wallet/WalletPage.tsx` sums only their account-query balances.
+
+Proposed diagnostic procedure, **not executed**:
+
+1. **Establish instance and artifact identity first.** Record the intended instance, dashboard origin, container identity, immutable image ID/digest, build inputs, and served frontend asset hashes. Compare these with the edited checkout; a matching version tag alone is insufficient. If the image lacks the edits, rebuild and recreate the app before assessing the change. The documented build path is `cargo run -p thus-spoke-zakura -- build --dev`; rebuilding alone does not replace an existing container.
+
+2. **Compare raw server responses around the symptom.** Capture `/api/v1/health`, `/api/v1/status`, `/api/v1/accounts`, and `/api/v1/mining/jobs` from that same instance, with timestamps. Inspect:
+   - Node height **and hash**, wallet observed/scanned heights **and hashes**, `state`, `error`, and `last_success_at`.
+   - `settled` and `settlement_blocker`; `api/status.rs::settlement_status` distinguishes unavailable components, height/hash mismatch, and wallet lag.
+   - Mining job state, count, error, and `progress_uncertain`. `mining.rs::MiningCoordinator::run` can report all blocks generated yet fail synchronization.
+
+   Use raw JSON: `web/src/lib/api/schemas.ts` currently omits wallet hashes and settlement fields from its parsed status contract.
+
+3. **If accounts are stale, trace server publication.** Follow `rpc.rs` → `reconcile.rs::sync_wallet` (lightwalletd, rewind, transparent discovery, shielded scans) → `wallet.rs::apply_balances` → `sync.rs::refresh_wallet_snapshot_until`. Correlate app/lightwalletd logs with the reported failure phase and checkpoint. Equal heights alone cannot exclude a reorg. The background loop attempts reconciliation about every two seconds; that is not a guaranteed completion delay.
+
+4. **If accounts are current but the display differs, trace the browser query.** Follow `api/endpoints.ts::api.accounts` → `client.ts::request` and `accountSchema` → `hooks/queries.ts::useAccounts`, key `['accounts']` → `WalletPage`. Compare the response, schema errors, query data/update time, and rendered amount. In `hooks/useServerEvents.ts`, only `wallet` directly invalidates accounts; `chain`, `sync`, and `mining` target other queries. Mining admission in `useStartMining` refreshes mining state only. Check actual SSE delivery and the resulting accounts request. Server-side SSE lag emits `resync`, but `api/events.rs` supplies no event IDs/replay; reconnecting alone does not prove cache freshness.
+
+Regression validation I would use, **all unexecuted**:
+
+- **Snapshot/sync:** `crates/ths-server/tests/unit/state/tests.rs::account_reads_return_the_snapshot_without_contacting_lightwalletd`; `unit/sync/tests.rs::{synchronization_failure_preserves_the_last_good_snapshot, publication_keeps_the_last_snapshot_unless_the_scan_reached_its_target, a_scan_behind_the_tip_publishes_only_while_it_is_canonical}`.
+- **Health, reorg, mining:** existing settlement tests in `unit/api/status/tests.rs`, same-height reorg coverage in `unit/reconcile/tests.rs`, and `unit/mining/tests.rs::synchronization_failure_has_full_known_count`. Add a handler regression proving prior success plus current sync error can yield health 200 while retaining the snapshot.
+- **Browser:** extend `web/src/hooks/useServerEvents.test.tsx` and `features/wallet/WalletPage.test.tsx` with a mounted real accounts query: change the API fixture, emit `wallet`, and assert refetch plus updated total. Cover refetch/schema failure and missed-connection recovery separately. Retain existing `resync` coverage and verify treasury-only mining leaves user totals unchanged.
+
+`book/troubleshooting.md` documents reset as permanent deletion of chain, wallet, seed, keys, and funds. It is not a stale-balance repair.
