@@ -6,10 +6,8 @@ tasks, four review criteria per task, and twelve catalog-routing requests: six
 positive cases and six near misses. The first tasks cover THS resource ownership,
 faucet recovery after a lost response, and stale dashboard balances.
 
-The [initial recorded run](results/2026-10-16/README.md) includes answers, full
-compressed traces, hashes, review evidence, scores, and remaining failures.
-The [follow-up run](results/2026-10-16-followup/README.md) records the revised skills
-against the unchanged task prompts and rubrics, with new baseline and treatment runs.
+Keep generated run artifacts outside the repository, as in the commands below.
+The local `evals/results/` directory is also ignored by Git.
 
 The source revision is pinned in the case file. Update it and recheck every oracle
 when deliberately refreshing the suite. Do not silently evaluate against the
@@ -36,7 +34,7 @@ test. The baseline still has its pretrained knowledge and the target project's
 instructions. The read-only sandbox does not make filesystem reads hermetic: audit
 command traces for out-of-workspace access and invalidate a contaminated run.
 Verify the effective prompt/catalog settings with your installed Codex version
-before comparing a new environment; the initial run used CLI 0.162.0.
+before comparing a new environment; these settings were verified with CLI 0.162.0.
 
 ```console
 git clone --no-checkout https://github.com/zcashlabs/thus-spoke-zakura.git /tmp/ths-eval-source

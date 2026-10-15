@@ -1,8 +1,0 @@
-{
-  "case": "stale-wallet-balance",
-  "arm": "without-skill",
-  "source_revision": "97ae98d5e62ef5044d73890868a90a230303461f",
-  "source_sha256": "90d29fe1720f2de3e8b8cda3b699789f1a81f2154c0d9cc8bc7f9eacda95878f",
-  "skills_sha256": null,
-  "prompt_sha256": "165aea8e38cdd78602745f15e48b72d127d918f21e0bd32fe85ce1b157e1d788"
-}
