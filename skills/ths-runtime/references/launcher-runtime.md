@@ -16,7 +16,7 @@
 | Self-update and uninstall | `crates/ths-cli/src/updater.rs`, `install.sh` |
 | Source-built app and lightwalletd images | `Dockerfile`, `docker/lightwalletd.Dockerfile` |
 
-Map checked against THS main at `97ae98d5e62ef5044d73890868a90a230303461f` on 2026-10-16. Paths without a crate prefix in a row are siblings of that row's first file. Resolve the actual checked-out symbols before editing; this map is navigation, not a substitute for reading the full function and its callers. A CLI request may cross into `ths-server` over HTTP, so inspect both ends of a changed command.
+Map checked against THS main at `6b00d0f0e40ecd42f61ca046485a03b69c5f3338` on 2026-10-16. Paths without a crate prefix in a row are siblings of that row's first file. Resolve the actual checked-out symbols before editing; this map is navigation, not a substitute for reading the full function and its callers. A CLI request may cross into `ths-server` over HTTP, so inspect both ends of a changed command.
 
 ## Command surface
 

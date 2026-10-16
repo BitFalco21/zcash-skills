@@ -17,7 +17,7 @@
 | Mining jobs | `crates/ths-server/src/mining.rs` |
 | Docker-free tests | `crates/ths-server/tests/unit/` mirrors the source modules; follow their `#[path]` declarations |
 
-Map checked against THS main at `97ae98d5e62ef5044d73890868a90a230303461f` on 2026-10-16. Paths without a crate prefix in a row are relative to `crates/ths-server/src/`. Re-resolve symbols in the target checkout and distinguish production callers from `#[cfg(test)]` adapters.
+Map checked against THS main at `6b00d0f0e40ecd42f61ca046485a03b69c5f3338` on 2026-10-16. Paths without a crate prefix in a row are relative to `crates/ths-server/src/`. Re-resolve symbols in the target checkout and distinguish production callers from `#[cfg(test)]` adapters.
 
 Inspect `Cargo.toml` and `crates/ths-server/Cargo.toml` before using upstream wallet documentation. This repository imports Zakura wallet crates (`zakura-keys`, `zakura-primitives`, `zakura-client-backend`, `zakura-client-sqlite`, `zakura-proofs`, `zakura-orchard`, `zakura-sapling-crypto`, `zakura-pczt`, `zakura-transparent`, `zakura-zip321`) under `zcash_*` aliases at exact-pinned versions. API semantics and compatibility claims must follow the resolved source.
 
