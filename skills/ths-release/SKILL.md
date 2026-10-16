@@ -5,7 +5,9 @@ description: Use when preparing, validating, or changing Thus Spoke Zakura versi
 
 # THS release
 
-Read current `AGENTS.md`, `RELEASING.md`, `CONTRIBUTING.md`, and [release path](references/release-path.md) before acting. Identify the exact source commit, Cargo version, tag, launcher artifacts, checksums, and app and lightwalletd image digests. The launcher uses exact versioned image tags; a source build and a published binary can have different update behavior.
+Read current `AGENTS.md`, `RELEASING.md`, and the relevant contribution instructions before acting. Identify the exact source commit, Cargo version, tag, launcher artifacts, checksums, and app and lightwalletd image digests. The launcher uses exact versioned image tags; a source build and a published binary can have different update behavior.
+
+For version or image compatibility, load [the artifact map](references/release-path.md#artifacts-that-must-agree). For a release run, load [candidate to publication](references/release-path.md#candidate-to-publication); for pull failures, load [the worked diagnosis](references/release-path.md#worked-task-candidate-passes-but-released-images-cannot-be-pulled). For installer/updater changes, load [replacement boundaries](references/release-path.md#installer-replacement-boundary). Select local checks with [checks by edit](references/release-path.md#checks-by-edit).
 
 Check the compatibility of launcher, app image, lightwalletd image, and pinned Zakura image as one release set. Verify the `release-distribution` feature path separately from ordinary source builds. For installer or updater edits, run the repository's Rust and install checks. For workflow edits, explain the release impact and inspect the candidate result before any public publication.
 

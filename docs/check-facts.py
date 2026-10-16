@@ -7,7 +7,8 @@ matches and reports matches that differ from the canonical value — the signal
 that a skill went stale after an upstream bump (image tag, version, height).
 
 It also warns when a fact's `verified` date is older than STALE_DAYS — a prompt
-to re-verify, not a failure. Facts without a `pattern` are date-only.
+to re-verify, not a failure. Facts without a local `pattern` can still define
+an upstream oracle; otherwise only their verification date is checked.
 
 A fact may set `kind: forbid` — then ANY pattern match in a doc is a
 contradiction. Use it for stale claims of absence ("X has no idempotency key")
@@ -16,11 +17,13 @@ where upstream later added the thing; a value-check cannot express that.
 A fact may also name an oracle: `upstream` (a raw file URL) and `extract` (a
 regex whose first group is the value upstream states). With --upstream the
 checker fetches each oracle and reports facts whose `value` no longer matches.
-A fetch that fails is a warning, never a failure. An `upstream` must be an
-https URL on ORACLE_HOSTS; any other host is an error and is never fetched.
+A fetch or extraction that fails leaves verification incomplete. An `upstream`
+must be an https URL on ORACLE_HOSTS; other hosts are never fetched.
 
 Run from anywhere:  python3 docs/check-facts.py [--upstream]
-Exit 0 = clean (or only warnings); exit 1 = contradictory values.
+Exit 0 = requested checks completed without contradictions (date warnings may remain);
+exit 1 = contradictions or invalid definitions; exit 2 = incomplete upstream verification.
+Without --upstream, exit 0 establishes local consistency only.
 """
 import argparse
 import os
@@ -115,16 +118,32 @@ def upstream_value(fact, fetch=fetch):
     if not oracle_allowed(fact):
         raise HostNotAllowed(f"{fact['upstream']}: oracle host not allowed")
     text = fetch(fact["upstream"])
-    m = re.search(fact["extract"], text, re.M)
-    if not m:
+    if "coverage" in fact:
+        scopes = list(re.finditer(fact["coverage"], text, re.M))
+        matches = []
+        if not scopes:
+            raise ExtractError(f"{fact['upstream']}: coverage pattern matched nothing")
+        for scope in scopes:
+            captured = list(re.finditer(fact["extract"], scope.group(0), re.M))
+            if len(captured) != 1:
+                raise ExtractError(f"{fact['upstream']}: unrecognized or ambiguous selector within coverage")
+            matches.extend(captured)
+    else:
+        matches = list(re.finditer(fact["extract"], text, re.M))
+    if not matches or any(not match.group(1) for match in matches):
         raise ExtractError(f"{fact['upstream']}: extract pattern matched nothing")
-    return m.group(1)
+    if fact.get("extract_all") == "true":
+        return ", ".join(sorted({match.group(1) for match in matches}))
+    return matches[0].group(1)
 
 
 def agrees(fact, current):
     """True when the value upstream states is exactly the one the fact records.
     Exact normalised equality — a truncated oracle match ("1.6" vs "1.6.0") is
-    not agreement."""
+    not agreement. extract_all compares comma-separated sets without ordering."""
+    if fact.get("extract_all") == "true":
+        return {norm_value(value) for value in current.split(",")} == {
+            norm_value(value) for value in fact["value"].split(",")}
     return norm_value(current) == norm_value(fact["value"])
 
 
@@ -177,12 +196,38 @@ def parse_facts(text):
 
 def definition_errors(fact):
     """Problems with how a fact is written, found without the network."""
+    if fact.get("kind", "value") not in ("value", "forbid"):
+        return [f"{fact['id']} has unknown kind {fact['kind']}"]
+    if fact.get("kind") == "forbid" and "pattern" not in fact:
+        return [f"{fact['id']} forbid fact needs a pattern"]
+    for field in ("pattern", "coverage"):
+        if field in fact:
+            try:
+                re.compile(fact[field])
+            except re.error as error:
+                return [f"{fact['id']} invalid {field} regex: {error}"]
+    if "verified" in fact:
+        try:
+            date.fromisoformat(fact["verified"])
+        except ValueError:
+            return [f"{fact['id']} verified date must be YYYY-MM-DD"]
+    if ("pattern" in fact and fact.get("kind") != "forbid" and "value" not in fact):
+        return [f"{fact['id']} value fact needs a value"]
     if "upstream" not in fact:
         return []
     if "extract" not in fact:
         return [f"{fact['id']} has `upstream` but no `extract` regex"]
+    try:
+        if re.compile(fact["extract"]).groups < 1:
+            return [f"{fact['id']} extract regex needs a capturing group"]
+    except re.error as error:
+        return [f"{fact['id']} invalid extract regex: {error}"]
+    if fact.get("extract_all", "false") not in ("true", "false"):
+        return [f"{fact['id']} extract_all must be true or false"]
     if not oracle_allowed(fact):
         return [f"{fact['id']} upstream {fact['upstream']} is not https on an allowed host ({', '.join(sorted(ORACLE_HOSTS))})"]
+    if "value" not in fact:
+        return [f"{fact['id']} upstream oracle needs a value"]
     return []
 
 
@@ -207,13 +252,13 @@ def main():
     today = date.today()
 
     for f in facts:
-        age = (today - date.fromisoformat(f["verified"])).days if "verified" in f else None
-        if age is not None and age > STALE_DAYS:
-            warnings.append(f"{f['id']}: verified {f.get('verified')} is {age}d old — re-check source")
         errors = definition_errors(f)
         if errors:
             mismatches += [f"docs/versioned-facts.md: {e}" for e in errors]
             continue
+        age = (today - date.fromisoformat(f["verified"])).days if "verified" in f else None
+        if age is not None and age > STALE_DAYS:
+            warnings.append(f"{f['id']}: verified {f.get('verified')} is {age}d old — re-check source")
         if "upstream" in f:
             oracles += 1
         if args.upstream and "upstream" in f:
@@ -251,14 +296,20 @@ def main():
         print(f"WARN  {w}")
     for m in mismatches:
         print(f"STALE {m}")
-    if mismatches:
-        print(f"\n{len(mismatches)} possible stale reference(s); update the file or versioned-facts.md")
-        return 1
     summary = f"{len(facts)} facts checked"
     if args.upstream:
-        summary += f", {oracles_compared}/{oracles} oracles compared"
-    summary += f", {len(warnings)} warning(s), no contradictions"
-    print(summary)
+        summary += f", {oracles_compared}/{oracles} upstream oracles compared"
+    summary += f", {len(warnings)} warning(s)"
+    if mismatches:
+        print(f"FAILED: {summary}; {len(mismatches)} possible stale reference(s); update the file or versioned-facts.md")
+        return 1
+    if args.upstream and (oracles_compared != oracles or oracles == 0):
+        print(f"INCOMPLETE: {summary}; upstream verification incomplete; no contradictions found in completed checks")
+        return 2
+    if args.upstream:
+        print(f"{summary}; upstream verification complete, no contradictions")
+    else:
+        print(f"{summary}; local claims consistent; upstream verification not requested")
     return 0
 
 

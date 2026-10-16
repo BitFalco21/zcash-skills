@@ -5,7 +5,9 @@ description: Use when constructing, signing, sending, retrying, or tracking Zcas
 
 # Zcash payments
 
-Read [payments and transaction state](references/payments.md) for the affected proposal, fee, broadcast, and inclusion rules. Resolve the network, transaction version, target height, receiver pool, and pinned wallet API first.
+Resolve the network, transaction version, target height, receiver pool, and pinned wallet API first.
+
+For proposal, fee, or memo behavior, load [payment construction](references/payments.md#constructing-the-intended-payment). For broadcast, expiry, inclusion, or uncertain retries, load [transaction tracking](references/payments.md#following-the-same-transaction); for a lost response, load [the worked retry task](references/payments.md#worked-task-response-lost-after-a-successful-submission). Choose regression oracles from [evidence for a change](references/payments.md#evidence-for-a-change).
 
 Treat a payment as a sequence of distinct states: intent, proposal, signed transaction, transmission, mempool observation, inclusion, and confirmation. Keep exact zatoshi amounts and transaction identities through those states. After an uncertain send result, reconcile the original transaction before making another payment. Derive spendability from the wallet's proposal rules, not a displayed total.
 

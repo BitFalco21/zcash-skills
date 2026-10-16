@@ -13,6 +13,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 import urllib.parse
 import urllib.request
 
@@ -129,7 +130,7 @@ class ParseTests(unittest.TestCase):
 
     def test_directives_are_fact_definition_lines_other_than_value(self):
         path = "docs/versioned-facts.md"
-        for line in ("id: x", "pattern: y", "upstream: z", "extract: (.)", "kind: forbid", "source: a", "verified: 2026-10-10", "```"):
+        for line in ("id: x", "pattern: y", "upstream: z", "extract: (.)", "extract_all: true", "coverage: ^.*$", "kind: forbid", "source: a", "verified: 2026-10-10", "```"):
             self.assertTrue(vc.is_directive(path, line), line)
         for line in ("value: 1.6.0", "| Fact | Value |", "Each block maps a `pattern`"):
             self.assertFalse(vc.is_directive(path, line), line)
@@ -284,7 +285,7 @@ class HostAllowlistTests(unittest.TestCase):
         self.assertEqual(cf.definition_errors({"id": "a", "value": "1"}), [])
         self.assertIn("no `extract`", cf.definition_errors({"id": "a", "upstream": "https://zips.z.cash/x"})[0])
         self.assertIn("not https on an allowed host", cf.definition_errors({"id": "a", "upstream": "https://evil.example/x", "extract": "(.)"})[0])
-        self.assertEqual(cf.definition_errors({"id": "a", "upstream": "https://zips.z.cash/x", "extract": "(.)"}), [])
+        self.assertEqual(cf.definition_errors({"id": "a", "value": "1", "upstream": "https://zips.z.cash/x", "extract": "(.)"}), [])
 
     def test_disallowed_pr_source_is_listed_not_fetched(self):
         fetched = []
@@ -321,6 +322,13 @@ class VerdictTests(unittest.TestCase):
         results, _ = run(["THS pins `zakuracore/zakura:1.6.0`."], pages={FACTS[0]["upstream"]: None})
         self.assertEqual(self.verdicts(results), ["⚠️"])  # not re-verified, so left for review
         self.assertIn("upstream unreachable", results[0]["evidence"])
+
+    def test_fetched_oracle_with_missing_declaration_reports_extraction_failure(self):
+        results, _ = run(["THS pins `zakuracore/zakura:1.6.0`."],
+                         pages={FACTS[0]["upstream"]: "mod images;"})
+        self.assertEqual(results[0]["verdict"], "⚠️")
+        self.assertIn("extraction failed", results[0]["evidence"])
+        self.assertNotIn("upstream unreachable", results[0]["evidence"])
 
     def test_forbidden_claim_is_a_contradiction(self):
         results, _ = run(["The address faucet has no idempotency key."])
@@ -535,6 +543,73 @@ class ReportTests(unittest.TestCase):
 
 
 class CheckFactsTests(unittest.TestCase):
+    def checker_run(self, values, upstream=True, facts=None):
+        facts = facts if facts is not None else [dict(FACTS[0], id=f"oracle-{i}") for i in range(len(values))]
+        output = io.StringIO()
+        with mock.patch.object(cf, "load_facts", return_value=facts), \
+                mock.patch.object(cf, "md_files", return_value=[]), \
+                mock.patch.object(cf, "upstream_value", side_effect=values), \
+                mock.patch.object(sys, "argv", ["check-facts.py"] + (["--upstream"] if upstream else [])), \
+                contextlib.redirect_stdout(output):
+            status = cf.main()
+        return status, output.getvalue()
+
+    def test_incomplete_upstream_verification_is_distinct_from_clean_and_contradicted(self):
+        for failure in (cf.UpstreamError("unreachable"), cf.ExtractError("declaration moved")):
+            with self.subTest(failure=failure):
+                status, output = self.checker_run(["zakuracore/zakura:1.6.0", failure])
+                self.assertEqual(status, 2, output)
+                self.assertIn("INCOMPLETE", output)
+                self.assertIn("1/2", output)
+        status, output = self.checker_run(["zakuracore/zakura:1.6.0"])
+        self.assertEqual(status, 0, output)
+        self.assertIn("upstream verification complete", output)
+        status, output = self.checker_run(["zakuracore/zakura:1.7.0", cf.UpstreamError("offline")])
+        self.assertEqual(status, 1, output)
+        self.assertIn("1/2", output)
+        status, output = self.checker_run([cf.UpstreamError("unused")], upstream=False)
+        self.assertEqual(status, 0, output)
+        self.assertIn("upstream verification not requested", output)
+
+    def test_invalid_definitions_fail_with_summary_instead_of_crashing(self):
+        for fact in (
+            {"id": "bad-pattern", "value": "v", "pattern": "["},
+            {"id": "no-value", "upstream": "https://zips.z.cash/x", "extract": "(.)"},
+            {"id": "bad-date", "value": "v", "verified": "not-a-date"},
+            {"id": "bad-kind", "kind": "unknown", "value": "v", "pattern": "."},
+        ):
+            with self.subTest(fact=fact):
+                status, output = self.checker_run(["v"], facts=[fact])
+                self.assertEqual(status, 1, output)
+                self.assertIn("FAILED", output)
+                self.assertIn("1 facts checked", output)
+
+    def test_set_oracle_detects_added_removed_and_renamed_ci_cases(self):
+        fact = {"id": "ci-cases", "value": "first_case, second_case", "extract_all": "true",
+                "upstream": "https://raw.githubusercontent.com/o/r/main/ci.yml",
+                "extract": r"--exact\s+(\w+)", "coverage": r"^.*--ignored\b.*$"}
+        for commands, expected in (("second_case first_case", True), ("first_case", False),
+                                   ("first_case second_case third_case", False), ("first_case renamed_case", False)):
+            text = "\n".join(f"cargo test -- --ignored --exact {name}" for name in commands.split())
+            value = cf.upstream_value(fact, fetch=lambda url: text)
+            self.assertEqual(cf.agrees(fact, value), expected, commands)
+        with self.assertRaises(cf.ExtractError):
+            cf.upstream_value(fact, fetch=lambda url: "workflow no longer selects exact cases")
+        current = "cargo test -- --ignored --exact first_case\ncargo test -- --ignored --exact second_case\n"
+        reordered_extra = current + "cargo test -- --exact third_case --ignored\n"
+        self.assertFalse(cf.agrees(fact, cf.upstream_value(fact, fetch=lambda url: reordered_extra)))
+        with self.assertRaises(cf.ExtractError):
+            cf.upstream_value(fact, fetch=lambda url: current + "cargo test -- --ignored $FILTER\n")
+
+    def test_behavior_oracle_detects_chain_mempool_change(self):
+        fact = {f["id"]: f for f in cf.load_facts()}["ths-chain-invalidation"]
+        current = "  chain: [[...queryKeys.status], ['blocks'], ['block'], ['transaction'], ['address']],\n"
+        self.assertTrue(cf.agrees(fact, cf.upstream_value(fact, fetch=lambda url: current)))
+        changed = current.replace("['blocks']", "['blocks'], ['mempool']")
+        self.assertFalse(cf.agrees(fact, cf.upstream_value(fact, fetch=lambda url: changed)))
+        with self.assertRaises(cf.ExtractError):
+            cf.upstream_value(fact, fetch=lambda url: "export const topicsMoved = {}")
+
     def test_agrees_ignores_commas_backticks_and_case(self):
         self.assertTrue(cf.agrees({"value": "4,465,026"}, "4465026"))
         self.assertTrue(cf.agrees({"value": "1.98.0"}, "1.98.0"))

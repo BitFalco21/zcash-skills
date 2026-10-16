@@ -59,8 +59,12 @@ Do not imply shielded/Ironwood-era wallet features exist on the sidecar — the 
 
 ## Pruning and snapshots
 
-- Native block pruning with configurable retention — a pruned Zakura is a full validating node but does not keep full historical blocks. Size claims (~11 GB pruned snapshot, ~680× faster bootstrap vs P2P sync at zakura.com/snapshots) are version- and workload-dependent; verify before quoting.
+- Native block pruning with configurable retention — a pruned Zakura is a full validating node but does not keep full historical blocks. Resolve the retention setting and the range available from the selected node before relying on historical RPCs.
 - Snapshot bootstrapping trades trust: the skipped range is not independently verified by the node. Say so when recommending it.
+
+## Historical benchmark claims
+
+Treat the previously reported ~11 GB pruned snapshot and ~680× bootstrap speedup over P2P sync associated with [the snapshot page](https://zakura.com/snapshots) as historical claims requiring verification. They are not current measurements or defaults. Before quoting either, locate the dated source or archived revision, identify the Zakura version, chain height, snapshot format, pruning retention, hardware, network, and comparison workload, and verify what was timed or counted. If those conditions cannot be recovered, omit the number. For a current recommendation, measure the selected version and workload separately rather than carrying a historical ratio forward.
 
 ## P2P v2 (experimental)
 

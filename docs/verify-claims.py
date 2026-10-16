@@ -96,7 +96,7 @@ URL_RE = re.compile(r"https?://[^\s)>\]\"'`]+")
 HREF_RE = re.compile(r"""href=["']([^"'#?]+)""")
 LEARN_LINK_RE = re.compile(r"^https://z\.cash/learn/(?:page/\d+/|[a-z0-9-]+/)$")
 PATH_EXT_RE = re.compile(r"\.(?:rs|toml|md|ts|tsx|yml|yaml|sh|json)$")
-DIRECTIVE_RE = re.compile(r"^\s*(?:```|(?:id|pattern|kind|source|verified|upstream|extract)\s*:)")
+DIRECTIVE_RE = re.compile(r"^\s*(?:```|(?:id|pattern|kind|source|verified|upstream|extract|extract_all|coverage)\s*:)")
 PLACEHOLDER_CHARS = set("{}[]*…<>")
 
 
@@ -550,6 +550,8 @@ def fact_check(line, facts, sources, upstream_cache, pr_fact_lines=()):
                         upstream_cache[f["id"]] = (check_facts.upstream_value(f, fetch=sources.fetch), None)
                     except check_facts.HostNotAllowed:
                         upstream_cache[f["id"]] = (None, "oracle host not allowed")
+                    except check_facts.ExtractError:
+                        upstream_cache[f["id"]] = (None, "oracle fetched but extraction failed; upstream format may have moved")
                     except UpstreamError:
                         upstream_cache[f["id"]] = (None, "upstream unreachable")
                 current, err = upstream_cache[f["id"]]

@@ -5,7 +5,9 @@ description: Use when changing the Thus Spoke Zakura ths CLI, named Docker insta
 
 # THS runtime
 
-Read the current repository `AGENTS.md` and [launcher and runtime](references/launcher-runtime.md). Trace the command from `crates/ths-cli/src/main.rs` through `Runtime` to Docker resources or the server API.
+Read the current repository `AGENTS.md`. Trace command parsing in `crates/ths-cli/src/args.rs` and dispatch in `commands.rs` through the relevant `runtime/` submodule or `client.rs` to Docker resources or the server API.
+
+Load [the source map](references/launcher-runtime.md#where-behavior-lives) when locating an unfamiliar owner, [command surface](references/launcher-runtime.md#command-surface) for CLI changes, and [instance lifecycle](references/launcher-runtime.md#instance-lifecycle) for startup or cleanup. For a same-name resource collision, load [the worked ownership task](references/launcher-runtime.md#worked-task-a-foreign-resource-has-our-instance-name). For stale behavior after source edits, load [artifact diagnosis](references/launcher-runtime.md#source-versus-running-artifact).
 
 Preserve Regtest-only behavior, loopback host ports, and instance-scoped cleanup during normal exit, interruption, and partial startup failure. Check that a source change reaches the built image before using live behavior as evidence. For command changes, update the README command table and run the Rust checks; run `tests/install.sh` when the installer changes.
 

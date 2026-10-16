@@ -5,7 +5,9 @@ description: Use when building Zcash wallet account, seed, key, viewing-authorit
 
 # Zcash wallet
 
-Resolve the target network and the selected wallet library before implementing wallet identity or address behavior. Use [keys and addresses](references/keys-addresses.md) for the relevant ZIPs, key capabilities, and receiver rules.
+Resolve the target network and the selected wallet library before implementing wallet identity or address behavior.
+
+For key authority or account identity, load [the contract and capability boundaries](references/keys-addresses.md#establish-the-contract). For UA receiver selection or TEX destinations, load [address handling](references/keys-addresses.md#handling-an-address). For seed restore or ZIP 321 parsing, load [recovery and requests](references/keys-addresses.md#recovery-and-requests); for an index-0 discovery failure, load [the worked restore task](references/keys-addresses.md#worked-task-restore-an-index-0-transparent-payment). Choose boundary tests from [useful checks](references/keys-addresses.md#useful-checks).
 
 Model account, spending key, viewing key, receiver, and encoded address as separate concepts. An address decoder does not establish account ownership or spending authority. Check how wallet birthdays and derivation paths affect restoration and discovery. Preserve shielded receiver choice and key privacy when adding logs or export paths.
 
