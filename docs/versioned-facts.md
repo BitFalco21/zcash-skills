@@ -43,7 +43,7 @@ file whose match text differs from `value`.
 | Regtest NU activation | NU6–NU6.3 at height 1 in generated `zakurad.toml`; `regtest_network().nu7 = None` | 2026-10-06 | `crates/ths-server/src/bootstrap/config.rs`, `wallet.rs` |
 | Address-faucet idempotency | `faucet_address` requires a key; `claim_address_faucet` persists to `address_faucets`; replay resumes the operation; `activities`/`address_faucets` share one key space (`IdempotencyConflict`) | 2026-10-16 | `crates/ths-server/src/api/payments.rs`, `db/address_faucet.rs`, `db/activity.rs`, `payments/progression.rs` |
 | Address-faucet replay tests | `confirmed_address_faucet_replays_without_sending_a_second_payment`, `address_faucet_replay_survives_restart_and_rejects_conflicting_intents`, `address_faucet_reconciles_the_original_txid_after_a_lost_broadcast_response` | 2026-10-16 | `crates/ths-server/tests/unit/api/payments/tests.rs`, `tests/unit/db/address_faucet/tests.rs`, `tests/unit/payments/submission/tests.rs`; pair legacy adapter tests with production progression tests |
-| CI live cases | `activity_recovery` selects five: `broadcast_recovers_after_auto_mine_failure`, `concurrent_identical_sends_have_one_chain_effect`, `address_faucet_retry_after_server_restart_pays_each_destination_once`, `queued_send_retry_survives_lost_response_and_restart`, `queued_external_faucet_retry_survives_lost_response_and_restart`; the 10k-block workload is not selected | 2026-10-16 | `.github/workflows/ci.yml` |
+| CI live cases | `activity_recovery` selects six: `broadcast_recovers_after_auto_mine_failure`, `concurrent_identical_sends_have_one_chain_effect`, `address_faucet_retry_after_server_restart_pays_each_destination_once`, `queued_send_retry_survives_lost_response_and_restart`, `queued_external_faucet_retry_survives_lost_response_and_restart`, `reorg_and_rollback_preserve_canonical_wallet_and_payment_state`; the 10k-block workload is not selected | 2026-10-17 | `.github/workflows/ci.yml` |
 | Chain SSE invalidation | status, blocks, block, transaction, address; mempool is omitted | 2026-10-16 | `web/src/hooks/useServerEvents.ts` `TOPICS.chain` |
 | Runtime / payment orchestration owners | `runtime/startup.rs::start_owned`; `payments/progression.rs::payment_confirmation_loop` | 2026-10-16 | `crates/ths-cli/src/runtime/startup.rs`, `crates/ths-server/src/payments/progression.rs` |
 
@@ -87,7 +87,7 @@ the PR claim report keeps its advisory policy and labels unverified rows.
 
 ```facts
 id: ths-ci-live-cases
-value: address_faucet_retry_after_server_restart_pays_each_destination_once, broadcast_recovers_after_auto_mine_failure, concurrent_identical_sends_have_one_chain_effect, queued_external_faucet_retry_survives_lost_response_and_restart, queued_send_retry_survives_lost_response_and_restart
+value: address_faucet_retry_after_server_restart_pays_each_destination_once, broadcast_recovers_after_auto_mine_failure, concurrent_identical_sends_have_one_chain_effect, queued_external_faucet_retry_survives_lost_response_and_restart, queued_send_retry_survives_lost_response_and_restart, reorg_and_rollback_preserve_canonical_wallet_and_payment_state
 verified: 2026-10-16
 source: .github/workflows/ci.yml — exact ignored live selections
 upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/.github/workflows/ci.yml

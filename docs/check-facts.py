@@ -149,12 +149,17 @@ def agrees(fact, current):
 
 def value_in_hit(fact, hit):
     """True when the fact's normalised value appears inside a pattern match.
-    Containment, not equality: a pattern may match a span that carries the value
-    (e.g. "NU7 ... Testnet ... 4,465,026"), but a truncated or extended hit can
-    never pass — digits must not be glued to more digits."""
+
+    A match that is one whitespace-free token must BE the value: a tag like
+    ``zakuracore/zakura:1.6.0-rc1`` or ``1.6.0.1`` is a different claim, not a
+    loose container of the pinned tag. Only a prose span (a match containing
+    whitespace, e.g. "NU7 ... Testnet ... 4,465,026") may carry the value as a
+    substring — and even then digits must not be glued to more digits."""
     val, hay = norm_value(fact["value"]), norm_value(hit)
     if not val:
         return False
+    if not re.search(r"\s", hit):
+        return hay == val
     i = hay.find(val)
     while i != -1:
         before = hay[i - 1] if i else ""

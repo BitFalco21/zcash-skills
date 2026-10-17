@@ -268,38 +268,69 @@ function resolveLink(base, href) {
   return out.join('/');
 }
 
-async function render(path) {
+const escHtml = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+async function render(route) {
   const home = document.getElementById('home');
   const reader = document.getElementById('reader');
+  const fragIdx = route.indexOf('#');
+  const path = fragIdx === -1 ? route : route.slice(0, fragIdx);
+  const frag = fragIdx === -1 ? '' : route.slice(fragIdx + 1);
   if (!path) { home.style.display = ''; reader.style.display = 'none'; window.scrollTo(0,0); return; }
   home.style.display = 'none'; reader.style.display = '';
-  const head = `<a class="back" href="#/">← zcashskills</a><div class="crumb">${path} · <a href="${path}">raw</a></div>`;
+  if (!FILES.includes(path)) {
+    reader.innerHTML = '<a class="back" href="#/">← zcashskills</a>' +
+      `<p>Not found: ${escHtml(path)}. <a href="#/">Back</a></p>`;
+    return;
+  }
+  const head = `<a class="back" href="#/">← zcashskills</a><div class="crumb">${escHtml(path)} · <a href="${path}">raw</a></div>`;
   let md;
   try {
     md = await getText(path);
   } catch (e) {
-    reader.innerHTML = head + `<p>Not found (${e.message}). <a href="#/">Back</a></p>`;
+    reader.innerHTML = head + `<p>Not found (${escHtml(e.message)}). <a href="#/">Back</a></p>`;
     return;
   }
   const fm = md.match(/^---\n([\s\S]*?)\n---\n/);
-  let banner = '';
+  if (fm) md = md.slice(fm[0].length);
+  reader.innerHTML = head;
   if (fm) {
     const name = (fm[1].match(/^name:\s*(.+)$/m) || [])[1] || '';
     const desc = (fm[1].match(/^description:\s*(.+)$/m) || [])[1] || '';
-    banner = `<div class="fmbanner"><b>${name}</b><br>${desc}</div>`;
-    md = md.slice(fm[0].length);
+    const banner = document.createElement('div');
+    banner.className = 'fmbanner';
+    const b = document.createElement('b');
+    b.textContent = name;
+    banner.append(b, document.createElement('br'), desc);
+    reader.appendChild(banner);
   }
   if (window.marked && marked.parse) {
-    reader.innerHTML = head + banner + marked.parse(md);
+    reader.insertAdjacentHTML('beforeend', marked.parse(md));
+    const seen = {};
+    for (const h of reader.querySelectorAll('h1,h2,h3,h4,h5,h6')) {
+      const base = h.textContent.trim().toLowerCase().replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-') || 'section';
+      let id = base, n = 0;
+      while (seen[id]) id = `${base}-${++n}`;
+      seen[id] = true; h.id = id;
+    }
     for (const a of reader.querySelectorAll('a[href]')) {
-      const resolved = resolveLink(path, a.getAttribute('href'));
-      if (resolved && resolved !== a.getAttribute('href') && FILES.includes(resolved)) a.href = '#/' + resolved;
+      const href = a.getAttribute('href');
+      if (href.startsWith('#') && !href.startsWith('#/')) {
+        a.href = '#/' + path + href;   // section link — stay in this document
+        continue;
+      }
+      const hi = href.indexOf('#');
+      const rel = hi === -1 ? href : href.slice(0, hi);
+      const suffix = hi === -1 ? '' : href.slice(hi);
+      const resolved = resolveLink(path, rel);
+      if (resolved && resolved !== rel && FILES.includes(resolved)) a.href = '#/' + resolved + suffix;
     }
   } else {
-    reader.innerHTML = head + banner + '<pre class="rawmd">' +
-      md.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</pre>';
+    reader.insertAdjacentHTML('beforeend',
+      '<pre class="rawmd">' + escHtml(md) + '</pre>');
   }
-  window.scrollTo(0, 0);
+  const target = frag && document.getElementById(frag);
+  if (target) target.scrollIntoView(); else window.scrollTo(0, 0);
   document.title = path + ' — zcashskills';
 }
 

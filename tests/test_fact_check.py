@@ -340,6 +340,26 @@ class VerdictTests(unittest.TestCase):
         results, _ = run(["THS pins `zakuracore/zakura:1.6`."])
         self.assertEqual(self.verdicts(results), ["❌"])
 
+    def test_prerelease_and_extended_tags_are_contradictions(self):
+        # A complete token match must equal the pinned tag — `1.6.0-rc1` and
+        # `1.6.0.1` contain the tag but assert a different version.
+        for claim in ("THS pins `zakuracore/zakura:1.6.0-rc1`.",
+                      "THS pins `zakuracore/zakura:1.6.0.1`."):
+            results, _ = run([claim])
+            self.assertEqual(self.verdicts(results), ["❌"], claim)
+
+    def test_value_contained_in_prose_span_still_passes(self):
+        # Span patterns carry the value inside prose — containment applies.
+        self.assertTrue(cf.value_in_hit(
+            {"value": "4,465,026"}, "NU7 activated on Testnet at 4,465,026"))
+        self.assertTrue(cf.value_in_hit(
+            {"value": "1.98.0"}, "Rust 1.98.0 toolchain"))
+        # …but a bare token is a complete claim — equality is required.
+        self.assertFalse(cf.value_in_hit(
+            {"value": "zakuracore/zakura:1.6.0"}, "zakuracore/zakura:1.6.0-rc1"))
+        self.assertFalse(cf.value_in_hit(
+            {"value": "zakuracore/zakura:1.6.0"}, "zakuracore/zakura:1.6.0.1"))
+
     def test_forbid_with_negation_flags_the_positive_claim_only(self):
         results, _ = run(["ZIP 317 is a consensus validity rule."])
         self.assertEqual(self.verdicts(results), ["❌"])
