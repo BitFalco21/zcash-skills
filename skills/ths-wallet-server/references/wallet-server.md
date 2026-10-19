@@ -10,6 +10,7 @@
 | Pinned wallet API and balances; SDK payment creation, journal, submission | `crates/ths-server/src/wallet.rs`, `wallet/payments.rs`, `wallet/journal.rs`, `wallet/submission.rs` |
 | Store and account constants; schema, accounts, activity claims, address-faucet claims | `crates/ths-server/src/db.rs`, `db/schema.rs`, `db/accounts.rs`, `db/activity.rs`, `db/address_faucet.rs` |
 | Atomic treasury reward import, cursor extension, rewind | `crates/ths-server/src/wallet/recovery.rs` |
+| Canonical wallet transaction history (`canonical_activity`) read from the wallet database for `api/status.rs` | `crates/ths-server/src/wallet/history.rs` |
 | State and wallet snapshot publication / sync loop | `crates/ths-server/src/state.rs`, `sync.rs` |
 | HTTP routing; status, payment validation/claims, mining, reorg/rollback, explorer, events, errors | `crates/ths-server/src/api.rs`, `api/status.rs`, `api/payments.rs`, `api/mining.rs`, `api/chain.rs`, `api/explorer.rs`, `api/events.rs`, `api/error.rs` |
 | Background payment progression and execution | `crates/ths-server/src/payments/progression.rs`, `payments/execution.rs`, `payments/attempt.rs` |
