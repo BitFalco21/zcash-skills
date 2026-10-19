@@ -16,15 +16,15 @@
 | Self-update and uninstall | `crates/ths-cli/src/updater.rs`, `install.sh` |
 | Source-built app and lightwalletd images | `Dockerfile`, `docker/lightwalletd.Dockerfile` |
 
-Map checked against THS main at `6b00d0f0e40ecd42f61ca046485a03b69c5f3338` on 2026-10-16. Paths without a crate prefix in a row are siblings of that row's first file. Resolve the actual checked-out symbols before editing; this map is navigation, not a substitute for reading the full function and its callers. A CLI request may cross into `ths-server` over HTTP, so inspect both ends of a changed command.
+Map checked against THS main at `c0edfb0585aa868504fa5e5ce330e58df59de8e1` on 2026-10-19. Paths without a crate prefix in a row are siblings of that row's first file. Resolve the actual checked-out symbols before editing; this map is navigation, not a substitute for reading the full function and its callers. A CLI request may cross into `ths-server` over HTTP, so inspect both ends of a changed command.
 
 ## Command surface
 
-Names only; the README command table and `book/cli.md` are canonical for flags and semantics — verify before asserting behavior.
+Names only; `book/cli.md` is canonical for flags and semantics — verify before asserting behavior.
 
-- Bare `ths` starts the default environment and opens the dashboard. Lifecycle: `start` (`--no-open`, `--port-offset`), `wait`, `status`, `endpoints`, `open`, `list`, `stop`, `reset --force`, `run -- <cmd>`.
+- Bare `ths` starts the default environment and opens the dashboard. Lifecycle: `start` (`--no-open`, `--port-offset`), `wait`, `status`, `endpoints` (`--env`), `open`, `list`, `stop`, `reset --force`, `run -- <cmd>`.
 - Wallet: `wallet balances`, `wallet faucet`, `wallet send`, `wallet activity`, `wallet shield`, `wallet unshield`; `faucet <ADDRESS>` funds an external address. `wallet send`/`wallet faucet`/`faucet` persist an idempotency key — repeating the command checks the pending payment instead of duplicating it.
-- Operations: `mine <N>`, `logs {app,zakura,lightwalletd}` (`-f`, `--tail`, `--head`), `pull`, `doctor`, `update`, `uninstall`.
+- Operations: `mine <N>`, `reorg --depth <N>` (`--keep-txs`), `rollback --depth <N>`, `tx <TXID>`, `block [ID]`, `logs {app,zakura,lightwalletd}` (`-f`, `--tail`, `--head`), `build` (`--dev`), `pull`, `doctor`, `update`, `uninstall`.
 - Globals: `--name <instance>` for isolated environments, `--json` where supported. `cargo run -p thus-spoke-zakura -- <args>` invokes the source build.
 
 ## Instance lifecycle
@@ -49,11 +49,11 @@ If `ths status --json` shows a URL that does not respond, compare the live app c
 
 `THS_DEV_API=<dashboard-url> npm run dev --prefix web` serves the edited frontend through Vite and proxies `/api` to the existing instance (`web/vite.config.ts`). Obtain that URL from `ths endpoints`. This frontend-only mode does not update `ths-server`; edited server code still needs the image rebuild and new-instance workflow above.
 
-For new or changed flags, update the command table in `README.md`. Run Rust checks after `crates/` edits and `tests/install.sh` after `install.sh` edits. Image names, tags, dependencies, workflows, and updater behavior have release impact under `AGENTS.md`; read `RELEASING.md` and use `ths-release` when touching them.
+For new or changed flags, update `book/cli.md`. Run Rust checks after `crates/` edits and `tests/install.sh` after `install.sh` edits. Image names, tags, dependencies, workflows, and updater behavior have release impact under `AGENTS.md`; read `RELEASING.md` and use `ths-release` when touching them.
 
 ## Review examples
 
-- **New `ths` command:** verify parsing, JSON/text output where supported, errors, server API contract, README table, and an end-to-end invocation against the source-built artifact if the behavior needs Docker.
+- **New `ths` command:** verify parsing, JSON/text output where supported, errors, server API contract, `book/cli.md`, and an end-to-end invocation against the source-built artifact if the behavior needs Docker.
 - **Startup fix:** prove that the failing checkpoint is reachable and only owned resources are removed on each exit; a happy-path start test alone is insufficient.
 - **Image change:** state which exact tags are selected by `build`, `pull`, and `start`, and how the change affects existing released launchers.
 
