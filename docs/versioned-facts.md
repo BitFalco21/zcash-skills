@@ -28,7 +28,7 @@ file whose match text differs from `value`.
 
 | Fact | Value | Verified | Source |
 | --- | --- | --- | --- |
-| Workspace version | `0.3.0` | 2026-10-08 | `Cargo.toml` |
+| Workspace version | `0.4.0` | 2026-10-19 | `Cargo.toml` |
 | Packages / binary | `ths-cli`, `ths-server`; package `thus-spoke-zakura`, binary `ths` | 2026-10-02 | `Cargo.toml` |
 | Rust toolchain | `1.98.0` (`rust-toolchain.toml`); Node `24` for `web/` | 2026-10-02 | `rust-toolchain.toml`, `ci.yml` |
 | Pinned node image | `zakuracore/zakura:1.6.0` (`ZAKURA_IMAGE` in `runtime/images.rs`) | 2026-10-16 | `crates/ths-cli/src/runtime/images.rs` |
@@ -87,8 +87,8 @@ the PR claim report keeps its advisory policy and labels unverified rows.
 
 ```facts
 id: ths-ci-live-cases
-value: address_faucet_retry_after_server_restart_pays_each_destination_once, broadcast_recovers_after_auto_mine_failure, concurrent_identical_sends_have_one_chain_effect, queued_external_faucet_retry_survives_lost_response_and_restart, queued_send_retry_survives_lost_response_and_restart, reorg_and_rollback_preserve_canonical_wallet_and_payment_state
-verified: 2026-10-16
+value: address_faucet_retry_after_server_restart_pays_each_destination_once, broadcast_recovers_after_auto_mine_failure, concurrent_identical_sends_have_one_chain_effect, external_ironwood_memo_is_recovered_by_receiving_wallet_sync, queued_external_faucet_retry_survives_lost_response_and_restart, queued_send_retry_survives_lost_response_and_restart, reorg_and_rollback_preserve_canonical_wallet_and_payment_state
+verified: 2026-10-19
 source: .github/workflows/ci.yml — exact ignored live selections
 upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/.github/workflows/ci.yml
 extract: --exact\s+([A-Za-z_][A-Za-z0-9_]*)
@@ -184,8 +184,8 @@ extract: ^ACTIVATION_HEIGHT \(NU6\.3\)\n: Testnet: [0-9]+\n: Mainnet: ([0-9]+)
 
 ```facts
 id: ths-workspace-version
-value: 0.3.0
-verified: 2026-10-09
+value: 0.4.0
+verified: 2026-10-19
 source: Cargo.toml ([workspace.package])
 upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/Cargo.toml
 extract: ^\[workspace\.package\]\n(?:.*\n)*?version = "([^"]+)"

@@ -663,7 +663,7 @@ class CheckFactsTests(unittest.TestCase):
             "nu7-branch-id": (ZIP_259, "0x77190AD9"),
             "nu63-branch-id": ("CONSENSUS_BRANCH_ID\n: 0x37A5165B\n", "0x37A5165B"),
             "nu63-mainnet-height": ("ACTIVATION_HEIGHT (NU6.3)\n: Testnet: 4134000\n: Mainnet: 3428143\n", "3428143"),
-            "ths-workspace-version": ('[workspace]\nresolver = "2"\n\n[workspace.package]\nversion = "0.3.0"\n', "0.3.0"),
+            "ths-workspace-version": ('[workspace]\nresolver = "2"\n\n[workspace.package]\nversion = "0.4.0"\n', "0.4.0"),
             "ths-rust-toolchain": ('[toolchain]\nchannel = "1.98.0"\n', "1.98.0"),
             "zakura-image": (RUNTIME_RS, "zakuracore/zakura:1.6.0"),
         }
