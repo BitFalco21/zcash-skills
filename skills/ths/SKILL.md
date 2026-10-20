@@ -7,7 +7,7 @@ description: Use when a Thus Spoke Zakura change crosses the launcher, wallet se
 
 Read the current repository `AGENTS.md` and relevant source before editing. This repository runs a disposable Zcash Regtest stack: `ths` starts Zakura, lightwalletd, and an app image containing `ths-server` and the dashboard. Treat the pinned Zakura wallet crates in `Cargo.toml` and `crates/ths-server/Cargo.toml` as the implementation in use, even where imports have `zcash_*` aliases. Use the general Zcash skills for protocol or wallet semantics, then confirm behavior in these pinned crates.
 
-The local chain activates every network upgrade through NU6.3 at height 1, so shielded funds live in the Ironwood pool — the wallet API rejects `orchard` as a pool, and Orchard can only be spent from, not received into.
+A fresh local chain activates every network upgrade through NU7 at height 1 (instances created before v0.4.0 keep their original schedule), so shielded funds live in the Ironwood pool — the wallet API rejects `orchard` as a pool, and Orchard can only be spent from, not received into.
 
 ## Choose the affected path
 
