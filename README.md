@@ -2,9 +2,11 @@
 
 Agent skills for building on Zcash — the current stack, not your training data.
 
-Zcash in 2026 is not the Zcash most models learned: `zcashd` is deprecated, ECC
-is now ZODL, the Orchard pool was sealed at NU6.3 in favor of Ironwood, and the
-dev stack is Zakura + lightwalletd/Zaino + the `librustzcash`/`zakura-*` crates.
+Zcash in 2026 is not the Zcash most models learned: `zcashd` is deprecated, the
+Orchard pool was sealed at NU6.3 in favor of Ironwood, and the dev stack is
+Zakura + lightwalletd/Zaino + the `librustzcash`/`zakura-*` crates. [Thus Spoke
+Zakura](https://github.com/zcashlabs/thus-spoke-zakura) runs that stack as a
+disposable Regtest environment with a dashboard, faucet, and development wallet.
 Each skill is a `SKILL.md` an agent reads before working; specialists keep depth
 in `references/`.
 
@@ -12,7 +14,7 @@ in `references/`.
 
 | Skill | Scope |
 | --- | --- |
-| [zcash](skills/zcash/SKILL.md) | Routes Zcash work across wallet, payments, light-client sync, and protocol rules. Start here when the owning layer is unclear. |
+| [zcash](skills/zcash/SKILL.md) | Routes Zcash work across wallet, payments, light-client sync, and protocol rules. Start here when it's unclear which layer owns the task. |
 | [zcash-wallet](skills/zcash-wallet/SKILL.md) | Accounts, seeds, keys, viewing authority, Unified Addresses, receiver selection, ZIP 321 payment requests. |
 | [zcash-payments](skills/zcash-payments/SKILL.md) | Proposals, fees (ZIP 317), input selection, memos, expiry (ZIP 203), broadcast and confirmation. |
 | [zcash-light-client](skills/zcash-light-client/SKILL.md) | Compact-block sync, birthdays, commitment trees, reorgs, service boundaries (lightwalletd/Zaino). |
