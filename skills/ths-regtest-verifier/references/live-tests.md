@@ -16,11 +16,11 @@
 | Large transparent reward history and later faucet responsiveness | Ignored `large_reward_history_keeps_treasury_faucet_responsive` |
 | Source-built dashboard or launcher behavior in containers | Rebuild app image, start a named disposable instance, inspect the actual running image |
 
-Read the current `README.md` activity-recovery section and `crates/ths-server/tests/activity_recovery.rs` before a live run. The fixture is in `crates/ths-server/tests/support/regtest.rs`; it owns UUID-prefixed resources, a source-built server process, private data directories, and cleanup. The live integration target uses the Cargo-built `ths-server` binary, not the app image. The app image must be rebuilt for a separate `ths` container run after server or web edits.
+Read the current `book/development.md` activity-recovery section and `crates/ths-server/tests/activity_recovery.rs` before a live run. The fixture is in `crates/ths-server/tests/support/regtest.rs`; it owns UUID-prefixed resources, a source-built server process, private data directories, and cleanup. The live integration target uses the Cargo-built `ths-server` binary, not the app image. The app image must be rebuilt for a separate `ths` container run after server or web edits.
 
 ## Documented recovery run
 
-From the repository root, the current sequence is (check `README.md` for the pinned image tag at your revision):
+From the repository root, the current sequence is (check `book/development.md` and `crates/ths-cli/src/runtime/images.rs` for the pinned image tag at your revision):
 
 ```console
 cargo test --locked --profile dev-runtime -p ths-server --test activity_recovery --no-run
@@ -50,7 +50,7 @@ The recovery case rejects one automatic mine, confirms the original txid is stil
 
 Before running, identify the source revision, Cargo profile, selected test, expected node and lightwalletd images, Docker daemon, and available time. Do not use a previously installed server binary as evidence for edited source. Distinguish setup failure, compilation failure, helper-test pass, live-case pass, timeout, and cleanup failure. A green command with zero selected live cases proves no Docker behavior.
 
-The fixture must remove only resources it registered, even after cancellation or partial startup. Do not prune shared Docker state or erase another instance. Inspect the fixture's allowlisted failure report rather than leaking keys, raw wallet data, or process logs. Report the exact command, observed chain and wallet checkpoints, transaction/activity oracle, elapsed time for a performance claim, and any untested boundary. For a negative control, follow the README's isolated-worktree procedure and restore temporary instrumentation immediately.
+The fixture must remove only resources it registered, even after cancellation or partial startup. Do not prune shared Docker state or erase another instance. Inspect the fixture's allowlisted failure report rather than leaking keys, raw wallet data, or process logs. Report the exact command, observed chain and wallet checkpoints, transaction/activity oracle, elapsed time for a performance claim, and any untested boundary. Run a negative control only after a successful live run and only in a separate checkout, and restore temporary instrumentation immediately.
 
 ## Worked task: verify 10,000 reward blocks
 
