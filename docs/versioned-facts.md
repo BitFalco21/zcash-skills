@@ -47,6 +47,14 @@ file whose match text differs from `value`.
 | Chain SSE invalidation | status, blocks, mempool, block, transaction, wallet-transaction, address | 2026-10-27 | `web/src/hooks/useServerEvents.ts` `TOPICS.chain` |
 | Runtime / payment orchestration owners | `runtime/startup.rs::start_owned`; `payments/progression.rs::payment_confirmation_loop` | 2026-10-16 | `crates/ths-cli/src/runtime/startup.rs`, `crates/ths-server/src/payments/progression.rs` |
 
+## Zcash JS (`zcashlabs/zcashjs`)
+
+| Fact | Value | Verified | Source |
+| --- | --- | --- | --- |
+| Package | `@zcashlabs/zcash.js` version `0.1.1` | 2026-10-27 | `package.json`, npm `latest` |
+| Node engine | `22.23.4` (exact pin; Brotli security update) | 2026-10-27 | `package.json` `engines`, `CHANGELOG.md` |
+| Bundled consensus | `zcash_protocol` `0.10.6`; presets carry genesis + activation through NU6.3 | 2026-10-27 | `docs/api/networks-amounts.md` |
+
 ## Machine-checkable facts
 
 Each block maps a `pattern` (regex appearing in repo docs) to the canonical
@@ -232,4 +240,34 @@ verified: 2026-10-12
 source: ZIP 320 reference implementation — transparent P2PKH fixture address (rst oracle coverage)
 upstream: https://raw.githubusercontent.com/zcash/zips/main/zips/zip-0320.rst
 extract: bs58check\.decode\('([^']+)'\)
+```
+
+```facts
+id: zcashjs-version
+value: 0.1.1
+pattern: zcashjs.{0,3}v?[0-9]+\.[0-9]+\.[0-9]+
+verified: 2026-10-27
+source: package.json + npm `latest` — @zcashlabs/zcash.js published version
+upstream: https://raw.githubusercontent.com/zcashlabs/zcashjs/main/package.json
+extract: "version":\s*"([0-9]+\.[0-9]+\.[0-9]+)"
+```
+
+```facts
+id: zcashjs-node-engine
+value: 22.23.4
+pattern: [Nn]ode.{0,10}22\.23\.[0-9]+
+verified: 2026-10-27
+source: package.json `engines.node` exact pin + CHANGELOG (Brotli security update)
+upstream: https://raw.githubusercontent.com/zcashlabs/zcashjs/main/package.json
+extract: "node":\s*"([0-9]+\.[0-9]+\.[0-9]+)"
+```
+
+```facts
+id: zcashjs-protocol-crate
+value: 0.10.6
+pattern: zcash_protocol.{0,5}[0-9]+\.[0-9]+\.[0-9]+
+verified: 2026-10-27
+source: docs/api/networks-amounts.md — preset activation maps match bundled zcash_protocol
+upstream: https://raw.githubusercontent.com/zcashlabs/zcashjs/main/docs/api/networks-amounts.md
+extract: zcash_protocol.{0,4}?([0-9]+\.[0-9]+\.[0-9]+)
 ```

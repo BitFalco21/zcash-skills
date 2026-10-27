@@ -2,8 +2,8 @@
 
 These evaluations measure agent answers to development tasks, separately from the
 fact-checker unit tests. [cases.json](cases.json) defines three source-investigation
-tasks, four review criteria per task, and twelve catalog-routing requests: six
-positive cases and six near misses. The first tasks cover THS resource ownership,
+tasks, four review criteria per task, and fourteen catalog-routing requests: seven
+positive cases and seven near misses. The first tasks cover THS resource ownership,
 faucet recovery after a lost response, and stale dashboard balances.
 
 Keep generated run artifacts outside the repository, as in the commands below.
@@ -92,7 +92,7 @@ not a harness failure. Inspect the per-arm scores and deltas.
 
 ## Triggering and near misses
 
-The routing batch exposes only the twelve candidate names/descriptions and request
+The routing batch exposes only the candidate names/descriptions and request
 texts with neutral IDs. Expected selections, case kinds, and skill bodies are
 hidden. Scoring requires each positive case's specialist, permits only declared
 optional neighbors, and requires an explicit empty list for every near miss.

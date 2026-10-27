@@ -189,6 +189,27 @@
       "required": [],
       "allowed": [],
       "kind": "near-miss"
+    },
+    {
+      "id": "route-13",
+      "prompt": "A Node.js service using @zcashlabs/zcash.js lost the response after broadcasting a send. Review how to resume the recorded operation instead of constructing a replacement payment.",
+      "required": [
+        "zcashjs"
+      ],
+      "allowed": [
+        "zcashjs",
+        "zcash",
+        "zcash-payments",
+        "zcash-wallet"
+      ],
+      "kind": "positive"
+    },
+    {
+      "id": "route-14",
+      "prompt": "A React storefront's fetch to our Solana RPC endpoint fails on a CORS preflight. There is no Zcash wallet or payment feature in this app.",
+      "required": [],
+      "allowed": [],
+      "kind": "near-miss"
     }
   ]
 }

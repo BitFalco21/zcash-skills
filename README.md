@@ -19,6 +19,7 @@ in `references/`.
 | [zcash-payments](skills/zcash-payments/SKILL.md) | Proposals, fees (ZIP 317), input selection, memos, expiry (ZIP 203), broadcast and confirmation. |
 | [zcash-light-client](skills/zcash-light-client/SKILL.md) | Compact-block sync, birthdays, commitment trees, reorgs, service boundaries (lightwalletd/Zaino). |
 | [zcash-protocol](skills/zcash-protocol/SKILL.md) | Consensus rules, network-upgrade activation, transaction encodings (v5/v6), proof verification, node validation. |
+| [zcashjs](skills/zcashjs/SKILL.md) | The `@zcashlabs/zcash.js` SDK: public/light clients, local wallets, proposals, send/shield, PCZT signing, recovery on Node and browsers. |
 | [zakura](skills/zakura/SKILL.md) | The Zakura full node (`zakurad`): install, zcashd-compat mode, pruning/snapshots, Regtest, P2P v2. |
 | [ths](skills/ths/SKILL.md) | Routes work in the [Thus Spoke Zakura](https://github.com/zcashlabs/thus-spoke-zakura) repo — a disposable Zcash Regtest stack. |
 | [ths-runtime](skills/ths-runtime/SKILL.md) | `ths` CLI, named Docker instances, service startup/cleanup, images, installer, endpoints. |

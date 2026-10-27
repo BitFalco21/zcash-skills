@@ -21,6 +21,7 @@ For each cross-layer request, write down the user-visible result, the layer that
 | Amounts, proposals, fees, privacy of spends, broadcast and inclusion | [zcash-payments](../zcash-payments/SKILL.md) |
 | Light-client sync, birthdays, commitment trees, reorgs, service boundaries | [zcash-light-client](../zcash-light-client/SKILL.md) |
 | Consensus rules, transaction formats, activation, node validation | [zcash-protocol](../zcash-protocol/SKILL.md) |
+| JavaScript/TypeScript apps using the `@zcashlabs/zcash.js` SDK | [zcashjs](../zcashjs/SKILL.md) |
 | Zakura node operation, zcashd-compat mode, pruning/snapshots, Regtest infra | [zakura](../zakura/SKILL.md) |
 | Work inside the Thus Spoke Zakura repo or its `ths` CLI | [ths](../ths/SKILL.md) |
 

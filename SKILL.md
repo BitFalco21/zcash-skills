@@ -64,6 +64,15 @@ Consensus rules, activation boundaries, encodings, verification.
   and added the Ironwood pool + v6 transactions (ZIPs 258, 229, 2005).
 - Test rule changes at `H-1`, `H`, `H+1`; use zcash-test-vectors for encodings.
 
+### [zcashjs](skills/zcashjs/SKILL.md)
+The `@zcashlabs/zcash.js` TypeScript SDK for Node and browsers.
+- Public/light clients never open a wallet; a wallet's queries are local
+  scanned state.
+- A timed-out send is `unknown` — resume the recorded operation; do not
+  construct a replacement.
+- Persistent wallet storage is Linux-only today; browsers need gRPC-Web + CORS
+  plus deployed lazy WASM/worker/proving assets.
+
 ### [zakura](skills/zakura/SKILL.md)
 The Zakura full node — a Zebra fork built for scale.
 - `zakurad` is not `zcashd`: the legacy RPC/wallet surface runs through

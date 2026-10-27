@@ -5,7 +5,7 @@ description: Use when constructing, signing, sending, retrying, or tracking Zcas
 
 # Zcash payments
 
-Resolve the network, transaction version, target height, receiver pool, and pinned wallet API first.
+Resolve the network, transaction version, target height, receiver pool, and pinned wallet API first. For a JavaScript or TypeScript payment built on `@zcashlabs/zcash.js`, load [zcashjs](../zcashjs/SKILL.md) for its SDK surface.
 
 For proposal, fee, or memo behavior, load [payment construction](references/payments.md#constructing-the-intended-payment). For broadcast, expiry, inclusion, or uncertain retries, load [transaction tracking](references/payments.md#following-the-same-transaction); for a lost response, load [the worked retry task](references/payments.md#worked-task-response-lost-after-a-successful-submission). Choose regression oracles from [evidence for a change](references/payments.md#evidence-for-a-change).
 
