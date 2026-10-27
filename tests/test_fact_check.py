@@ -677,7 +677,7 @@ class CheckFactsTests(unittest.TestCase):
             "nu63-mainnet-height": ("ACTIVATION_HEIGHT (NU6.3)\n: Testnet: 4134000\n: Mainnet: 3428143\n", "3428143"),
             "ths-workspace-version": ('[workspace]\nresolver = "2"\n\n[workspace.package]\nversion = "0.4.1"\n', "0.4.1"),
             "ths-rust-toolchain": ('[toolchain]\nchannel = "1.98.0"\n', "1.98.0"),
-            "zakura-image": (RUNTIME_RS, "zakuracore/zakura:1.6.0"),
+            "zakura-image": ('const ZAKURA_IMAGE: &str = "zakuracore/zakura:1.7.0";\n', "zakuracore/zakura:1.7.0"),
         }
         for fid, (text, want) in samples.items():
             with self.subTest(fid):

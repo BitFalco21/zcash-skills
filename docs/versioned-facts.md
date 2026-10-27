@@ -31,7 +31,7 @@ file whose match text differs from `value`.
 | Workspace version | `0.4.1` | 2026-10-27 | `Cargo.toml` |
 | Packages / binary | `ths-cli`, `ths-server`; package `thus-spoke-zakura`, binary `ths` | 2026-10-02 | `Cargo.toml` |
 | Rust toolchain | `1.98.0` (`rust-toolchain.toml`); Node `24` for `web/` | 2026-10-02 | `rust-toolchain.toml`, `ci.yml` |
-| Pinned node image | `zakuracore/zakura:1.6.0` (`ZAKURA_IMAGE` in `runtime/images.rs`) | 2026-10-16 | `crates/ths-cli/src/runtime/images.rs` |
+| Pinned node image | `zakuracore/zakura:1.7.0` (`ZAKURA_IMAGE` in `runtime/images.rs`) | 2026-10-27 | `crates/ths-cli/src/runtime/images.rs` |
 | zcashd-compat sidecar image | `zakuracore/zcashd` — current docs tag `v1.2.0` (zcashd-versioned, independent of Zakura tags) | 2026-10-08 | `zakura` repo `docs/zcashd-compat.md` |
 | App / lightwalletd images | `ghcr.io/zcashlabs/thus-spoke-zakura-app`, `-lightwalletd` | 2026-10-16 | `crates/ths-cli/src/runtime/images.rs`, `release.yml` |
 | Wallet crate pins | `zakura-{keys,primitives,proofs,orchard,sapling-crypto,transparent,zip321} = 2.2.0`; `zakura-client-{backend,sqlite} = 0.1.0-rc7`; `zakura-pczt = 0.1.0-rc4`; imported under `zcash_*` aliases | 2026-10-08 | `crates/ths-server/Cargo.toml` |
@@ -125,9 +125,9 @@ extract: ^pub\(crate\) async fn (payment_confirmation_loop)\(
 
 ```facts
 id: zakura-image
-value: zakuracore/zakura:1.6.0
+value: zakuracore/zakura:1.7.0
 pattern: zakuracore/zakura:[0-9a-zA-Z.\-]+
-verified: 2026-10-16
+verified: 2026-10-27
 source: crates/ths-cli/src/runtime/images.rs (ZAKURA_IMAGE)
 upstream: https://raw.githubusercontent.com/zcashlabs/thus-spoke-zakura/main/crates/ths-cli/src/runtime/images.rs
 extract: const ZAKURA_IMAGE: &str = "([^"]+)"

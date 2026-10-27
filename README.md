@@ -73,7 +73,7 @@ The `zcash-*` and `ths-*` skills were seeded from
 and updated against the current
 [thus-spoke-zakura](https://github.com/zcashlabs/thus-spoke-zakura) source
 (the `tsz-*` crates are now `ths-*`, the shielded pool is Ironwood, and the
-pinned node image is `zakuracore/zakura:1.6.0`).
+pinned node image is `zakuracore/zakura:1.7.0`).
 
 Primary references:
 

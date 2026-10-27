@@ -19,7 +19,7 @@ For deployment, load [install paths](references/node.md#install-and-run); for le
 ## Boundaries that matter
 
 - Zakura validates and serves chain data; a separate lightwallet service (lightwalletd today, Zaino going forward) serves light clients; wallet construction lives in the `librustzcash`/`zakura-*` client crates. A `zakurad` RPC answer is node truth, not wallet state.
-- Regtest is a supported deployment — Thus Spoke Zakura pins `zakuracore/zakura:1.6.0` for exactly this — but a Regtest result proves nothing about Mainnet peer behavior, which is where zcashd-compat and P2P v2 live.
+- Regtest is a supported deployment — Thus Spoke Zakura pins `zakuracore/zakura:1.7.0` for exactly this — but a Regtest result proves nothing about Mainnet peer behavior, which is where zcashd-compat and P2P v2 live.
 - Distinguish node crates from crypto/wallet crates. Dependents may import the wallet family under `zcash_*` aliases; resolve the real packages in `Cargo.toml` and `Cargo.lock` before applying upstream API documentation.
 
 ## Review examples
