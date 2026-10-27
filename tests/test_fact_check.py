@@ -623,9 +623,21 @@ class CheckFactsTests(unittest.TestCase):
 
     def test_behavior_oracle_detects_chain_mempool_change(self):
         fact = {f["id"]: f for f in cf.load_facts()}["ths-chain-invalidation"]
-        current = "  chain: [[...queryKeys.status], ['blocks'], ['block'], ['transaction'], ['address']],\n"
+        current = (
+            "  chain: [\n"
+            "    [...queryKeys.status],\n"
+            "    ['blocks'],\n"
+            "    [...queryKeys.mempool],\n"
+            "    ['block'],\n"
+            "    ['transaction'],\n"
+            "    ['wallet-transaction'],\n"
+            "    ['address'],\n"
+            "  ],\n"
+        )
         self.assertTrue(cf.agrees(fact, cf.upstream_value(fact, fetch=lambda url: current)))
-        changed = current.replace("['blocks']", "['blocks'], ['mempool']")
+        inline = "  chain: [[...queryKeys.status], ['blocks'], [...queryKeys.mempool], ['block'], ['transaction'], ['wallet-transaction'], ['address']],\n"
+        self.assertTrue(cf.agrees(fact, cf.upstream_value(fact, fetch=lambda url: inline)))
+        changed = current.replace("[...queryKeys.mempool],\n", "")
         self.assertFalse(cf.agrees(fact, cf.upstream_value(fact, fetch=lambda url: changed)))
         with self.assertRaises(cf.ExtractError):
             cf.upstream_value(fact, fetch=lambda url: "export const topicsMoved = {}")
@@ -663,7 +675,7 @@ class CheckFactsTests(unittest.TestCase):
             "nu7-branch-id": (ZIP_259, "0x77190AD9"),
             "nu63-branch-id": ("CONSENSUS_BRANCH_ID\n: 0x37A5165B\n", "0x37A5165B"),
             "nu63-mainnet-height": ("ACTIVATION_HEIGHT (NU6.3)\n: Testnet: 4134000\n: Mainnet: 3428143\n", "3428143"),
-            "ths-workspace-version": ('[workspace]\nresolver = "2"\n\n[workspace.package]\nversion = "0.4.0"\n', "0.4.0"),
+            "ths-workspace-version": ('[workspace]\nresolver = "2"\n\n[workspace.package]\nversion = "0.4.1"\n', "0.4.1"),
             "ths-rust-toolchain": ('[toolchain]\nchannel = "1.98.0"\n', "1.98.0"),
             "zakura-image": (RUNTIME_RS, "zakuracore/zakura:1.6.0"),
         }
