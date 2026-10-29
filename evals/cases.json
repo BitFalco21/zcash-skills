@@ -210,46 +210,6 @@
       "required": [],
       "allowed": [],
       "kind": "near-miss"
-    },
-    {
-      "id": "route-15",
-      "prompt": "A user pasted their seed phrase into chat and asked me to handle their Sprout migration before NU7. Write the response.",
-      "required": [
-        "sprout-rescue"
-      ],
-      "allowed": [
-        "sprout-rescue",
-        "zcash",
-        "zcash-wallet"
-      ],
-      "kind": "positive"
-    },
-    {
-      "id": "route-16",
-      "prompt": "A user tried z_sendmany from their Sprout address to a Sapling address and it was rejected. Explain why, and what the recommended migration path does differently.",
-      "required": [
-        "sprout-rescue"
-      ],
-      "allowed": [
-        "sprout-rescue",
-        "zcash",
-        "zcash-payments",
-        "zcash-wallet"
-      ],
-      "kind": "positive"
-    },
-    {
-      "id": "route-17",
-      "prompt": "z_setmigration was running but the zcashd node restarted and migration stopped progressing. What does the zcashd migration doc say about restart and reactivation behavior?",
-      "required": [
-        "sprout-rescue"
-      ],
-      "allowed": [
-        "sprout-rescue",
-        "zcash",
-        "zcash-wallet"
-      ],
-      "kind": "positive"
     }
   ]
 }

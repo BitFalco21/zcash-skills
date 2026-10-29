@@ -55,14 +55,6 @@ file whose match text differs from `value`.
 | Node engine | `22.23.4` (exact pin; Brotli security update) | 2026-10-27 | `package.json` `engines`, `CHANGELOG.md` |
 | Bundled consensus | `zcash_protocol` `0.10.6`; presets carry genesis + activation through NU6.3 | 2026-10-27 | `docs/api/networks-amounts.md` |
 
-## Sprout→Sapling migration tool (zcashd docs)
-
-| Fact | Value | Verified | Source |
-| --- | --- | --- | --- |
-| Available since | zcashd `2.0.5-2` | 2026-10-28 | [Sprout-to-Sapling Migration](https://zcash.readthedocs.io/en/master/rtd_pages/sapling_turnstile.html) |
-| Batch cadence | up to 5 transactions whenever the blockchain reaches a 500-block-height interval | 2026-10-28 | same page |
-| End condition | auto-disables when the wallet's Sprout balance falls below 0.01 ZEC | 2026-10-28 | same page |
-
 ## Machine-checkable facts
 
 Each block maps a `pattern` (regex appearing in repo docs) to the canonical
@@ -278,34 +270,4 @@ verified: 2026-10-27
 source: docs/api/networks-amounts.md — preset activation maps match bundled zcash_protocol
 upstream: https://raw.githubusercontent.com/zcashlabs/zcashjs/main/docs/api/networks-amounts.md
 extract: zcash_protocol.{0,4}?([0-9]+\.[0-9]+\.[0-9]+)
-```
-
-```facts
-id: sprout-migration-since
-value: 2.0.5-2
-pattern: since zcashd (?:\*\*)?[0-9]+\.[0-9]+\.[0-9]+-[0-9]+|zcashd ≥ ?[0-9]+\.[0-9]+\.[0-9]+-[0-9]+
-verified: 2026-10-28
-source: zcashd docs — "As of version 2.0.5-2 of zcashd" the tool is available
-upstream: https://zcash.readthedocs.io/en/master/rtd_pages/sapling_turnstile.html
-extract: As of version ([0-9.\-]+)
-```
-
-```facts
-id: sprout-migration-interval
-value: 500
-pattern: [0-9]+[- ]block[- ]height interval
-verified: 2026-10-28
-source: zcashd docs — batches "whenever the blockchain reaches a 500 block height interval"
-upstream: https://zcash.readthedocs.io/en/master/rtd_pages/sapling_turnstile.html
-extract: ([0-9]+) block height interval
-```
-
-```facts
-id: sprout-migration-batch-cap
-value: 5
-pattern: up to [0-9]+ transactions
-verified: 2026-10-28
-source: zcashd docs — "creating up to 5 transactions" per interval
-upstream: https://zcash.readthedocs.io/en/master/rtd_pages/sapling_turnstile.html
-extract: up to ([0-9]+) transactions
 ```

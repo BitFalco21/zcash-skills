@@ -2,7 +2,7 @@
 
 These evaluations measure agent answers to development tasks, separately from the
 fact-checker unit tests. [cases.json](cases.json) defines three source-investigation
-tasks, four review criteria per task, and seventeen catalog-routing requests: ten
+tasks, four review criteria per task, and fourteen catalog-routing requests: seven
 positive cases and seven near misses. The first tasks cover THS resource ownership,
 faucet recovery after a lost response, and stale dashboard balances.
 

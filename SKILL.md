@@ -73,15 +73,6 @@ The `@zcashlabs/zcash.js` TypeScript SDK for Node and browsers.
 - Persistent wallet storage is Linux-only today; browsers need gRPC-Web + CORS
   plus deployed lazy WASM/worker/proving assets.
 
-### [sprout-rescue](skills/sprout-rescue/SKILL.md)
-The zcashd Sprout→Sapling migration tool (`z_setmigration` since 2.0.5-2).
-- Never handle wallet.dat, seeds, keys, or passphrases — the user types
-  secrets in their own terminal; unsolicited "recovery services" are scams.
-- Sprout→Sapling always crosses the transparent pool; the tool hides each
-  migration among concurrent ones, it does not make it invisible.
-- `z_setmigration` does not survive a restart unless `-migration` is set —
-  and with the flag set, restart re-enables it even after `z_setmigration false`.
-
 ### [zakura](skills/zakura/SKILL.md)
 The Zakura full node — a Zebra fork built for scale.
 - `zakurad` is not `zcashd`: the legacy RPC/wallet surface runs through
